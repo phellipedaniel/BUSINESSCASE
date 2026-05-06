@@ -5,67 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Petlove — Análise Logística SP 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Google Maps API — substitua YOUR_GMAPS_KEY pela sua chave -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYJlTP9pv38R0VPxme8fsLTyQC0f8_X2A&libraries=visualization&callback=initMapaCalor" async defer></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+/* DM Mono para números/mono */
+@font-face { font-family: 'DM Mono'; src: local('DM Mono'); }
+
+:root {
+  --font-display: Georgia, 'Times New Roman', serif; /* Gooper fallback */
+  --font-ui:      'Inter', system-ui, sans-serif;
+  --font-mono:    'Courier New', monospace;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#EFEFEF;
-  --surface:#FFFFFF;
-  --border:#E0E0E0;
-  --border-strong:#CCCCCC;
-  --text-primary:#1A1A1A;
-  --text-secondary:#666666;
-  --text-tertiary:#999999;
-  --accent:#5B4FE8;
-  --accent-light:#ECEAFF;
-  --success:#1B7A3E;
-  --success-light:#E6F7ED;
-  --danger:#C0392B;
-  --danger-light:#FDE8E8;
-  --warn:#D97706;
-  --warn-light:#FEF3C7;
-  --neutral-light:#F5F5F5;
-  --neutral:#999999;
-  --header:#4A3899;
+  /* ── Caramelo v2 — Petlove ── */
+  --bg:#F3EEE8;               /* Gelo — fundo de página */
+  --surface:#FFFFFF;           /* Cards */
+  --border:#D9D3CC;
+  --border-strong:#B8B2AB;
+  --text-primary:#1A1918;
+  --text-secondary:#3A3837;
+  --text-tertiary:#6E6C6B;
+  --accent:#4E2096;            /* Roxo Petlove principal */
+  --accent-light:#F1EBFA;      /* Wash roxo suave */
+  --success:#49A971;
+  --success-light:#E9F7EF;
+  --danger:#EA534A;
+  --danger-light:#FDEEEE;
+  --warn:#FFA840;
+  --warn-light:#FFF5E6;
+  --neutral-light:#F5F1EC;
+  --neutral:#6E6C6B;
+  --header:#4E2096;
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;line-height:1.5;min-height:100vh;}
+body{font-family:var(--font-ui,'Inter',sans-serif);background:var(--bg);color:var(--text-primary);font-size:14px;line-height:1.5;min-height:100vh;}
+h1,h2,h3{font-family:var(--font-display,Georgia,serif);}
 
-/* HEADER */
+/* ── HEADER — padrão Cassandra ── */
 .app-header{
   background:var(--header);
-  padding:.75rem 2rem .5rem;
+  padding:1rem 2rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1.5rem;
+  flex-wrap:wrap;
 }
-.header-top{display:flex;align-items:flex-start;justify-content:space-between;}
-.header-eyebrow{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px;}
-.app-header h1{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;line-height:1.15;}
-.header-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px;}
-.header-meta{display:flex;gap:20px;font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;}
-.header-meta b{color:rgba(255,255,255,.9);}
+.header-left{}
+.header-eyebrow{
+  font-size:10px;font-weight:600;
+  color:rgba(255,255,255,.5);
+  text-transform:uppercase;letter-spacing:.12em;
+  margin-bottom:4px;
+}
+.app-header h1{
+  font-size:22px;font-weight:800;color:#fff;
+  letter-spacing:-.4px;line-height:1.2;
+  font-family:var(--font-display,Georgia,serif);
+  margin-bottom:4px;
+}
+.header-sub{
+  font-size:11px;color:rgba(255,255,255,.5);
+  display:flex;gap:12px;flex-wrap:wrap;
+}
+.header-sub span::before{content:'· ';opacity:.5;}
+.header-sub span:first-child::before{content:'';}
 
-/* TABS no header */
+/* TABS como pills à direita — padrão Cassandra */
 .tabs{
-  background:var(--header);
-  display:flex;gap:4px;
-  padding:.5rem 2rem 0;
-  border-bottom:none;
+  display:flex;gap:6px;flex-wrap:wrap;
+  align-items:center;
 }
 .tab-btn{
   font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
   color:rgba(255,255,255,.6);
-  background:none;border:none;
-  padding:7px 16px 9px;
-  border-radius:6px 6px 0 0;
+  background:rgba(255,255,255,.1);
+  border:none;
+  padding:6px 16px;
+  border-radius:9999px;
   cursor:pointer;transition:all .15s;
-  border-bottom:3px solid transparent;
+  white-space:nowrap;
 }
-.tab-btn:hover{color:#fff;background:rgba(255,255,255,.08);}
+.tab-btn:hover{color:#fff;background:rgba(255,255,255,.2);}
 .tab-btn.active{
-  color:#fff;
-  background:rgba(255,255,255,.15);
-  border-bottom:3px solid #fff;
+  color:var(--header);
+  background:#fff;
+  font-weight:700;
 }
 
 
@@ -76,16 +103,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primar
 
 /* KPIS */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.5rem;}
-.kpi{background:#fff;border-radius:8px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.kpi{background:#fff;border-radius:8px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(60,35,18,.08);}
 .kpi-label{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
 .kpi-value{font-size:28px;font-weight:800;color:var(--text-primary);line-height:1.1;letter-spacing:-.5px;}
 .kpi-value.green{color:var(--success);}
 .kpi-value.red{color:var(--danger);}
-.kpi-value.blue{color:#1A6BFA;}
+.kpi-value.blue{color:#4E2096;}
 .kpi-sub{font-size:11px;color:var(--text-tertiary);margin-top:5px;}
 
 /* SECTION */
-.section{background:#fff;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.section{background:#fff;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(60,35,18,.08);}
 .section-title{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;}
 
 /* CONTROLS */
@@ -157,9 +184,8 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 .badgem-r{color:#B91C1C;background:#FEE2E2;}
 .badgem-c{color:#5A5A72;background:#F1F0F5;}
 #map-barueri{flex:1;}
-.leaflet-popup-content-wrapper{border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;box-shadow:0 4px 24px rgba(0,0,0,.12);}
-.leaflet-popup-content{margin:12px 16px;}
-.popup-nome{font-weight:700;font-size:14px;margin-bottom:6px;color:#111;}
+
+.popup-nome{font-weight:700;font-size:14px;margin-bottom:6px;color:#1A1918;font-family:var(--font-display,Georgia,serif);}
 .popup-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:3px;font-size:12px;color:#666;}
 .popup-row span:last-child{font-weight:600;color:#111;font-family:'DM Mono',monospace;}
 
@@ -174,11 +200,11 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 .custo-ganho{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-align:right;color:var(--success);}
 .model-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
 .model-tag{font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;}
-.tag-lapa{color:#1e40af;background:#dbeafe;}
+.tag-lapa{color:#4E2096;background:#F1EBFA;}
 .tag-barueri{color:#14532d;background:#dcfce7;}
 .resumo-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.5rem;}
-.r-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.r-card.green{border-left:4px solid #1B7A3E;background:#f0fdf4;}
+.r-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;box-shadow:0 1px 3px rgba(60,35,18,.06);}
+.r-card.green{border-left:4px solid #49A971;background:#E9F7EF;}
 .r-label{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
 .r-value{font-size:22px;font-weight:800;color:var(--text-primary);}
 .r-value.green{color:var(--success);}
@@ -192,7 +218,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 
 .vel-bar-wrap{display:flex;align-items:center;gap:8px;}
 .vel-bar{height:8px;border-radius:4px;min-width:4px;transition:width .3s;}
-.vel-bar.lapa{background:#EF4444;}
+.vel-bar.lapa{background:#EA534A;}
 .vel-bar.bar{background:#22C55E;}
 .tl-row{display:flex;align-items:center;gap:0;margin-bottom:12px;}
 .tl-label{width:140px;font-size:12px;font-weight:600;color:var(--text-secondary);flex-shrink:0;}
@@ -211,14 +237,14 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 .fluxo-node{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:1rem 1.25rem;flex:1;text-align:center;position:relative;}
 .fluxo-node.atual{border-color:#EF4444;background:#FFF5F5;}
 .fluxo-node.novo{border-color:#22C55E;background:#F0FDF4;}
-.fluxo-node.hub{border-color:#5B4FE8;background:#F5F3FF;}
+.fluxo-node.hub{border-color:#4E2096;background:#F5F3FF;}
 .fluxo-arrow{display:flex;align-items:center;padding:0 6px;color:var(--text-tertiary);font-size:18px;}
 .fluxo-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
 .fluxo-value{font-size:20px;font-weight:800;line-height:1.1;margin-bottom:3px;}
 .fluxo-sub{font-size:11px;color:var(--text-secondary);}
 .fluxo-node.atual .fluxo-value{color:#B91C1C;}
 .fluxo-node.novo .fluxo-value{color:#15803D;}
-.fluxo-node.hub .fluxo-value{color:#4338CA;}
+.fluxo-node.hub .fluxo-value{color:#4E2096;}
 .modelo-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:.75rem;}
 .modelo-label.atual{color:#B91C1C;background:#FEE2E2;}
 .modelo-label.novo{color:#15803D;background:#DCFCE7;}
@@ -227,7 +253,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 .estoque-card{background:#F5F3FF;border:1.5px solid #C4B5FD;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;}
 .estoque-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:.75rem;}
 .est-item{background:#fff;border-radius:8px;padding:.75rem 1rem;text-align:center;}
-.est-value{font-size:20px;font-weight:800;color:#4338CA;}
+.est-value{font-size:20px;font-weight:800;color:#4E2096;}
 .est-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-tertiary);margin-top:3px;}
 
 
@@ -238,13 +264,13 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 .flx-red{background:#FFF5F5;border:1px solid #FECACA;}
 .flx-orange{background:#FFFBEB;border:1px solid #FDE68A;}
 .flx-green{background:#F0FDF4;border:1px solid #A7F3D0;}
-.flx-teal{background:#F0FDFA;border:1px solid #99F6E4;}
+.flx-teal{background:#EEF5FF;border:1px solid #7CA5D8;}
 .flx-tags{display:flex;gap:5px;flex-wrap:wrap;}
 .flx-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;}
 .flx-tag-red{color:#B91C1C;background:#FEE2E2;}
 .flx-tag-orange{color:#92400E;background:#FEF3C7;}
 .flx-tag-green{color:#065F46;background:#D1FAE5;}
-.flx-tag-teal{color:#0E7490;background:#CFFAFE;}
+.flx-tag-teal{color:#0A60D8;background:#DBEAFE;}
 .flx-arrow-wrap{display:flex;flex-direction:column;align-items:center;margin:8px 0;gap:0;}
 .flx-arrow-line{width:2px;height:14px;}
 .flx-arrow-red{background:#EF4444;}
@@ -265,29 +291,24 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 <body>
 
 <div class="app-header">
-  <div class="header-top">
-    <div>
-      <div class="header-eyebrow">Petlove Logística &nbsp;·&nbsp; Jan/2026 – Hoje</div>
-      <h1>Business Case — Hub's Petlove</h1>
+  <div class="header-left">
+    <div class="header-eyebrow">Petlove Logística &nbsp;·&nbsp; Jan/2026 – Hoje</div>
+    <h1>Business Case — Hub's Petlove</h1>
+    <div class="header-sub">
+      <span>~105 bairros atendidos</span>
+      <span>20 lojas SP</span>
+      <span>Hub Lapa · Barueri</span>
+      <span>CD Itapeva MG</span>
     </div>
   </div>
-</div>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('lapa')">Vendas Hub Lapa por Bairro</button>
-  <button class="tab-btn" onclick="switchTab('fluxo')">Fluxo de Abastecimento de Lojas</button>
-  <button class="tab-btn" onclick="switchTab('abastecimento')">Calculadora de Custos entre Modelos</button>
-</div>
-
-  <div class="filter-row">
-    <span class="filter-label">Período</span>
-    <span class="pill active" onclick="togglePill(this,'jan')">Jan</span>
-    <span class="pill active" onclick="togglePill(this,'fev')">Fev</span>
-    <span class="pill active" onclick="togglePill(this,'mar')">Mar</span>
-    <span class="pill active" onclick="togglePill(this,'abr')">Abr</span>
-    <span class="pill active" onclick="togglePill(this,'mai')">Mai</span>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('lapa')">Hub Lapa</button>
+    <button class="tab-btn" onclick="switchTab('fluxo')">Fluxo Logístico</button>
+    <button class="tab-btn" onclick="switchTab('abastecimento')">Calculadora</button>
   </div>
 </div>
+
+
 
 <!-- ===================== ABA 1: LAPA ===================== -->
 <div id="tab-lapa" class="tab-content active">
@@ -454,8 +475,8 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
   <div class="section">
     <div class="section-title">Evolução de custo semanal — Lapa vs Barueri</div>
     <div style="display:flex;gap:16px;margin-bottom:10px;">
-      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#378ADD;display:inline-block;"></span>Via Lapa</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75;display:inline-block;"></span>Via Barueri</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#7CA5D8;display:inline-block;"></span>Via Lapa</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#49A971;display:inline-block;"></span>Via Barueri</span>
     </div>
     <div style="position:relative;width:100%;height:240px;">
       <canvas id="chart-calc" role="img" aria-label="Evolução custo Lapa vs Barueri">Evolução custos.</canvas>
@@ -471,7 +492,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 
   <div style="text-align:center;margin-bottom:2rem;">
     <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Análise comparativa</div>
-    <h2 style="font-size:22px;font-weight:800;color:var(--text-primary);letter-spacing:-.3px;margin-bottom:6px;">Fluxo logístico — Modelo atual vs Proposto</h2>
+    <h2 style="font-size:22px;font-weight:800;color:var(--text-heading,#4E2096);letter-spacing:-.3px;margin-bottom:6px;font-family:var(--font-display,Georgia,serif);">Fluxo logístico — Modelo atual vs Proposto</h2>
     <p style="font-size:13px;color:var(--text-secondary);max-width:600px;margin:0 auto;">Como as mercadorias chegam até as lojas hoje e como chegarão com o Hub Barueri como ponto de estoque regional.</p>
   </div>
 
@@ -480,7 +501,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 
     <!-- MODELO ATUAL -->
     <div style="background:#fff;border-radius:14px;border:1.5px solid #FECACA;overflow:hidden;box-shadow:0 2px 12px rgba(239,68,68,.08);">
-      <div style="background:linear-gradient(135deg,#B91C1C,#EF4444);padding:1.25rem 1.5rem;">
+      <div style="background:#EA534A;padding:1.25rem 1.5rem;">
         <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Modelo atual</div>
         <div style="font-size:18px;font-weight:800;color:#fff;">CD Itapeva → Hub Lapa → Lojas</div>
         <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;">Cargas fracionadas · Alta frequência · Baixa agilidade</div>
@@ -577,7 +598,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 
     <!-- MODELO PROPOSTO -->
     <div style="background:#fff;border-radius:14px;border:1.5px solid #A7F3D0;overflow:hidden;box-shadow:0 2px 12px rgba(34,197,94,.08);">
-      <div style="background:linear-gradient(135deg,#065F46,#059669);padding:1.25rem 1.5rem;">
+      <div style="background:#49A971;padding:1.25rem 1.5rem;">
         <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Modelo proposto</div>
         <div style="font-size:18px;font-weight:800;color:#fff;">CD Itapeva → Barueri → Lojas</div>
         <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;">Cargas consolidadas · Estoque local · Alta agilidade</div>
@@ -621,7 +642,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
               <span class="flx-tag flx-tag-teal">Buffer de segurança</span>
             </div>
           </div>
-          <div style="position:absolute;top:-8px;right:12px;background:#4338CA;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;">NOVO</div>
+          <div style="position:absolute;top:-8px;right:12px;background:#4E2096;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;">NOVO</div>
         </div>
 
         <!-- Seta -->
@@ -669,11 +690,11 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
   </div>
 
   <!-- GANHOS CONSOLIDADOS -->
-  <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+  <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(60,35,18,.06);">
     <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">Resumo dos ganhos com o modelo proposto</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
       <div class="ganho-item">
-        <div class="ganho-icon" style="background:#EEF0FF;color:#4338CA;">⚡</div>
+        <div class="ganho-icon" style="background:#F1EBFA;color:#4E2096;">⚡</div>
         <div>
           <div class="ganho-title">Velocidade de disponibilização</div>
           <div class="ganho-desc">Lead time cai de ~6.5h para ~3.2h — <strong>51% mais rápido</strong> para o item chegar na prateleira</div>
@@ -701,14 +722,14 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
         </div>
       </div>
       <div class="ganho-item">
-        <div class="ganho-icon" style="background:#F5F3FF;color:#6D28D9;">🎯</div>
+        <div class="ganho-icon" style="background:#F1EBFA;color:#4E2096;">🎯</div>
         <div>
           <div class="ganho-title">Consolidação de carga</div>
           <div class="ganho-desc">Cargas maiores e mais cheias saindo de MG — <strong>melhor custo/kg</strong> no frete</div>
         </div>
       </div>
       <div class="ganho-item">
-        <div class="ganho-icon" style="background:#E0F7FA;color:#0891B2;">📍</div>
+        <div class="ganho-icon" style="background:#DBEAFE;color:#0A60D8;">📍</div>
         <div>
           <div class="ganho-title">Proximidade às lojas</div>
           <div class="ganho-desc">Barueri a ~20km médio das lojas vs ~140km do modelo anterior — <strong>120km a menos</strong> na última milha</div>
@@ -718,7 +739,7 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
   </div>
 
   <!-- CICLO DE REPOSIÇÃO VISUAL -->
-  <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+  <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.5rem;box-shadow:0 1px 4px rgba(60,35,18,.06);">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
       <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;">Ciclo de reposição — comparativo de etapas</div>
       <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:6px 14px;font-size:11px;color:#B91C1C;font-weight:600;">
@@ -1133,7 +1154,7 @@ function renderTabelaLapa(mesIdx,topN,busca){
     const share=(val/total*100).toFixed(1);
     const barW=Math.round(val/maxVal*100);
     const pct=val/maxVal;
-    const color=pct>0.7?'#EF4444':pct>0.4?'#F59E0B':pct>0.15?'#4338CA':'#22C55E';
+    const color=pct>0.7?'#EA534A':pct>0.4?'#FFA840':pct>0.15?'#4E2096':'#49A971';
     let trend='';
     if(mesIdx!=='total'&&parseInt(mesIdx)>0){
       const prev=item.meses[parseInt(mesIdx)-1]||0;
@@ -1162,7 +1183,7 @@ function renderTabelaLapa(mesIdx,topN,busca){
   }).join('');
 
   // Atualizar marcadores no mapa se já iniciado
-  if(leafCalor) atualizarMarcadores(mesIdx);
+  if(gMap) atualizarMarcadores(mesIdx);
 }
 
 let lineChart=null, donutChart=null;
@@ -1207,7 +1228,7 @@ function updateLapa(){
   renderKPIsLapa(mes);
   renderRaioCards(mes);
   renderTabelaLapa(mes,50,busca);
-  if(leafCalor) atualizarMarcadores(mes);
+  if(gMap) atualizarMarcadores(mes);
 }
 
 document.getElementById('sel-mes').addEventListener('change', updateLapa);
@@ -1239,7 +1260,7 @@ function mcor(km){
   if(!km) return {fill:'#888780',border:'#5F5E5A',cls:'badgem-c',lbl:'s/ dado'};
   if(km<=30) return {fill:'#1D9E75',border:'#0F6E56',cls:'badgem-v',lbl:'≤ 30 km'};
   if(km<=80) return {fill:'#BA7517',border:'#854F0B',cls:'badgem-a',lbl:'≤ 80 km'};
-  return {fill:'#C0392B',border:'#A32D2D',cls:'badgem-r',lbl:'> 80 km'};
+  return {fill:'#EA534A',border:'#A32D2D',cls:'badgem-r',lbl:'> 80 km'};
 }
 
 let mapaInit = false;
@@ -1268,7 +1289,7 @@ function initMapa(){
     .bindPopup('<div class="popup-nome">Hub Barueri (Alphaville)</div><div style="font-size:12px;color:#666;">Ponto central de distribuição</div>');
 
   [20,50,100].forEach(r=>{
-    const c = r<=20?'#1D9E75':r<=50?'#BA7517':'#C0392B';
+    const c = r<=20?'#1D9E75':r<=50?'#BA7517':'#EA534A';
     L.circle([HUB_LAT,HUB_LNG],{radius:r*1000,color:c,weight:1,opacity:0.4,fillOpacity:0.04,fillColor:c,dashArray:'6,4'}).addTo(leafMap).bindTooltip(r+' km',{permanent:false,direction:'top'});
   });
 
@@ -1639,7 +1660,7 @@ function renderEstoque(){
     <div class="est-item"><div class="est-value">${saidasNovo}x</div><div class="est-label">saídas Itapeva/semana (novo)</div></div>
     <div class="est-item"><div class="est-value" style="color:#15803D;">-${saidas15-saidasNovo}x</div><div class="est-label">expedições reduzidas/semana</div></div>
     <div class="est-item"><div class="est-value" style="color:#15803D;">${Math.round((saidas15-saidasNovo)/saidas15*100)}%</div><div class="est-label">redução no acionamento de Itapeva</div></div>
-    <div class="est-item"><div class="est-value" style="color:#4338CA;">${cobDias}d</div><div class="est-label">cobertura estimada no Hub</div></div>
+    <div class="est-item"><div class="est-value" style="color:#4E2096;">${cobDias}d</div><div class="est-label">cobertura estimada no Hub</div></div>
   `;
 
   document.getElementById('tbody-impacto').innerHTML = [
@@ -1653,7 +1674,7 @@ function renderEstoque(){
     <td style="font-weight:500;">${ind}</td>
     <td style="text-align:center;color:#B91C1C;font-weight:600;">${atual}</td>
     <td style="text-align:center;color:#15803D;font-weight:600;">${novo}</td>
-    <td style="text-align:center;color:#4338CA;font-weight:700;">${ganho}</td>
+    <td style="text-align:center;color:#4E2096;font-weight:700;">${ganho}</td>
   </tr>`).join('');
 }
 
@@ -1799,95 +1820,182 @@ const BAIRRO_COORDS = {
 };
 
 const HUB_LAPA_C = { lat: -23.5240, lng: -46.6800 };
-let leafCalor=null, heatLayer=null, circulos={};
+let gMap=null, gHeatmap=null, gCirculos={}, gInfoWindow=null;
 
 function initMapaCalor(){
-  if(leafCalor) return;
+  if(typeof google === 'undefined'){ console.warn('Google Maps não carregou'); return; }
+  if(gMap) return;
 
-  leafCalor = L.map('map-calor', {zoomControl:true, attributionControl:false})
-    .setView([HUB_LAPA_C.lat, HUB_LAPA_C.lng], 12);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-    attribution:'© OpenStreetMap © CARTO', maxZoom:19
-  }).addTo(leafCalor);
-
-  // Hub marker
-  const hubIcon = L.divIcon({
-    html:`<div style="width:18px;height:18px;background:#EF4444;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #EF4444,0 2px 8px rgba(0,0,0,.4);"></div>`,
-    iconSize:[18,18], iconAnchor:[9,9], className:''
+  gMap = new google.maps.Map(document.getElementById('map-calor'), {
+    center: {lat: HUB_LAPA_C.lat, lng: HUB_LAPA_C.lng},
+    zoom: 12,
+    mapTypeId: 'roadmap',
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    gestureHandling: 'cooperative'
   });
-  L.marker([HUB_LAPA_C.lat, HUB_LAPA_C.lng], {icon:hubIcon, zIndexOffset:2000})
-    .addTo(leafCalor)
-    .bindTooltip('<b>Hub Lapa — GoodStorage Park Lapa IV</b><br>Rua Mateo Forte, 216 — Água Branca', {permanent:false, direction:'right'});
 
-  // Raios
-  circulos.r5  = L.circle([HUB_LAPA_C.lat,HUB_LAPA_C.lng],{radius:5000,  color:'#22C55E',weight:1.5,opacity:.9,fillOpacity:.04,dashArray:'5,4'}).addTo(leafCalor).bindTooltip('5 km',{permanent:true,direction:'right',className:'',offset:[5000*Math.cos(0.78),0]});
-  circulos.r10 = L.circle([HUB_LAPA_C.lat,HUB_LAPA_C.lng],{radius:10000, color:'#F59E0B',weight:1.5,opacity:.9,fillOpacity:.04,dashArray:'5,4'}).addTo(leafCalor).bindTooltip('10 km',{permanent:true,direction:'right'});
-  circulos.r20 = L.circle([HUB_LAPA_C.lat,HUB_LAPA_C.lng],{radius:20000, color:'#EF4444',weight:1.5,opacity:.9,fillOpacity:.04,dashArray:'5,4'}).addTo(leafCalor).bindTooltip('20 km',{permanent:true,direction:'right'});
+  gInfoWindow = new google.maps.InfoWindow();
 
-  // Heatmap layer
-  const maxPed = Math.max(...Object.values(BAIRRO_COORDS).map(v=>v[2]));
-  const heatData = Object.values(BAIRRO_COORDS).map(([lat,lng,ped])=>[lat,lng,ped/maxPed]);
-  heatLayer = L.heatLayer(heatData,{
-    radius:35, blur:25, maxZoom:14,
-    gradient:{0.1:'#3399FF',0.3:'#00CCFF',0.5:'#00FF88',0.7:'#FFFF00',0.85:'#FF8800',1.0:'#FF0000'}
-  }).addTo(leafCalor);
+  // ── Hub marker ──
+  const hubMarker = new google.maps.Marker({
+    position: {lat: HUB_LAPA_C.lat, lng: HUB_LAPA_C.lng},
+    map: gMap,
+    title: 'Hub Lapa',
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 10,
+      fillColor: '#EA534A',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 3
+    },
+    zIndex: 2000
+  });
+  hubMarker.addListener('click', () => {
+    gInfoWindow.setContent('<div style="font-family:Inter,sans-serif;font-size:13px;"><b>Hub Lapa — GoodStorage Park Lapa IV</b><br><span style="color:#666;">Rua Mateo Forte, 216 — Água Branca</span></div>');
+    gInfoWindow.open(gMap, hubMarker);
+  });
 
-  // Circles layer para identificar bairros
+  // ── Raios ──
+  gCirculos.r5 = new google.maps.Circle({
+    center:{lat:HUB_LAPA_C.lat,lng:HUB_LAPA_C.lng}, radius:5000,
+    strokeColor:'#22C55E', strokeOpacity:.9, strokeWeight:1.5,
+    fillColor:'#22C55E', fillOpacity:.04, map:gMap
+  });
+  gCirculos.r10 = new google.maps.Circle({
+    center:{lat:HUB_LAPA_C.lat,lng:HUB_LAPA_C.lng}, radius:10000,
+    strokeColor:'#FFA840', strokeOpacity:.9, strokeWeight:1.5,
+    fillColor:'#FFA840', fillOpacity:.04, map:gMap
+  });
+  gCirculos.r20 = new google.maps.Circle({
+    center:{lat:HUB_LAPA_C.lat,lng:HUB_LAPA_C.lng}, radius:20000,
+    strokeColor:'#EA534A', strokeOpacity:.9, strokeWeight:1.5,
+    fillColor:'#EA534A', fillOpacity:.04, map:gMap
+  });
+
+  // ── Heatmap ──
+  const heatData = Object.values(BAIRRO_COORDS).map(([lat,lng,ped]) => ({
+    location: new google.maps.LatLng(lat, lng),
+    weight: ped
+  }));
+  gHeatmap = new google.maps.visualization.HeatmapLayer({
+    data: heatData, map: gMap, radius: 40,
+    gradient: [
+      'rgba(0,0,0,0)','#3399FF','#00CCFF',
+      '#00FF88','#FFFF00','#FF8800','#FF0000'
+    ]
+  });
+
+  // ── Círculos proporcionais de bairros ──
   window._bairroLayers = [];
   atualizarMarcadores('total');
 
-  // Controles
-  ['r5','r10','r20'].forEach(id=>{
-    document.getElementById(id).addEventListener('change', e=>{
-      if(e.target.checked) circulos[id].addTo(leafCalor);
-      else leafCalor.removeLayer(circulos[id]);
+  // ── Marcadores de lojas ──
+  MAP_LOJAS.forEach(loja => {
+    if(!loja.lat || !loja.lng) return;
+    const mk = new google.maps.Marker({
+      position: {lat: loja.lat, lng: loja.lng},
+      map: gMap,
+      title: loja.nome,
+      icon: {
+        path: 'M -10,-10 L 10,-10 L 10,10 L -10,10 Z',
+        fillColor: '#4E2096',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2,
+        scale: 1,
+        anchor: new google.maps.Point(0, 0),
+        labelOrigin: new google.maps.Point(0, 0)
+      },
+      label: {text:'🏪', fontSize:'13px'},
+      zIndex: 1500
+    });
+    mk.addListener('click', () => {
+      gInfoWindow.setContent(
+        `<div style="font-family:Inter,sans-serif;padding:2px 0;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;">🏪 ${loja.nome}</div>
+          <div style="font-size:12px;color:#555;">${loja.km ? loja.km+' km do Hub' : 'Fora da área SP'} · ${loja.pedidos.toLocaleString('pt-BR')} ped.</div>
+        </div>`
+      );
+      gInfoWindow.open(gMap, mk);
     });
   });
 
-  setTimeout(()=>{ leafCalor.invalidateSize(); updateLapa(); }, 200);
+  // ── Botão Home ──
+  const homeBtn = document.createElement('button');
+  homeBtn.title = 'Centralizar no Hub Lapa';
+  homeBtn.innerHTML = '🏠';
+  homeBtn.style.cssText = 'margin:10px;width:34px;height:34px;background:#fff;border:none;border-radius:4px;cursor:pointer;font-size:16px;box-shadow:0 1px 5px rgba(60,35,18,.35);display:flex;align-items:center;justify-content:center;';
+  homeBtn.addEventListener('click', () => {
+    gMap.panTo({lat: HUB_LAPA_C.lat, lng: HUB_LAPA_C.lng});
+    gMap.setZoom(12);
+  });
+  gMap.controls[google.maps.ControlPosition.TOP_LEFT].push(homeBtn);
+
+  // ── Checkboxes de raio ──
+  [{id:'r5',key:'r5'},{id:'r10',key:'r10'},{id:'r20',key:'r20'}].forEach(({id,key}) => {
+    document.getElementById(id).addEventListener('change', e => {
+      gCirculos[key].setMap(e.target.checked ? gMap : null);
+    });
+  });
+
+  // ── Resize + init ──
+  google.maps.event.trigger(gMap, 'resize');
+  updateLapa();
 }
 
 function atualizarMarcadores(mesIdx){
-  if(!leafCalor) return;
-  // Remover marcadores antigos
-  (window._bairroLayers||[]).forEach(l=>leafCalor.removeLayer(l));
+  if(!gMap) return;
+  (window._bairroLayers||[]).forEach(m => m.setMap(null));
   window._bairroLayers = [];
 
   const totGeral = Object.values(BAIRRO_COORDS).reduce((a,[,,p])=>a+p,0);
-  const maxPed = Math.max(...Object.values(BAIRRO_COORDS).map(v=>v[2]));
-  const sorted = Object.entries(BAIRRO_COORDS).sort((a,b)=>b[1][2]-a[1][2]);
+  const maxPed   = Math.max(...Object.values(BAIRRO_COORDS).map(v=>v[2]));
+  const sorted   = Object.entries(BAIRRO_COORDS).sort((a,b)=>b[1][2]-a[1][2]);
 
   sorted.forEach(([nome,[lat,lng,ped]], rank) => {
-    const pct = ped/maxPed;
-    const r = Math.max(8, Math.min(32, 6 + Math.sqrt(pct)*30));
-    const color = pct>0.65?'#EF4444':pct>0.35?'#F59E0B':pct>0.12?'#4338CA':'#22C55E';
-    const opacity = 0.45 + pct*0.4;
+    const pct   = ped/maxPed;
+    const scale = Math.max(6, Math.min(22, 4 + Math.sqrt(pct)*22));
+    const fill  = pct>0.65?'#EA534A':pct>0.35?'#FFA840':pct>0.12?'#4E2096':'#49A971';
+    const alpha = 0.45 + pct*0.4;
 
-    const circle = L.circleMarker([lat,lng], {
-      radius: r,
-      color: '#fff',
-      weight: 1.5,
-      fillColor: color,
-      fillOpacity: opacity
-    }).addTo(leafCalor);
+    const mk = new google.maps.Marker({
+      position: {lat, lng},
+      map: gMap,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale,
+        fillColor: fill,
+        fillOpacity: alpha,
+        strokeColor: '#fff',
+        strokeWeight: 1.5
+      },
+      title: nome,
+      zIndex: Math.round(pct*100)
+    });
 
-    circle.bindTooltip(
-      `<div style="font-family:Inter,sans-serif;">
-        <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${rank+1}. ${nome}</div>
-        <div style="font-size:12px;color:#555;">${ped.toLocaleString('pt-BR')} pedidos &nbsp;·&nbsp; ${(ped/totGeral*100).toFixed(1)}%</div>
-      </div>`,
-      {direction:'top', offset:[0,-(r+4)]}
-    );
+    mk.addListener('click', () => {
+      gInfoWindow.setContent(
+        `<div style="font-family:Inter,sans-serif;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${rank+1}. ${nome}</div>
+          <div style="font-size:12px;color:#555;">${ped.toLocaleString('pt-BR')} pedidos · ${(ped/totGeral*100).toFixed(1)}%</div>
+        </div>`
+      );
+      gInfoWindow.open(gMap, mk);
+    });
 
-    window._bairroLayers.push(circle);
+    window._bairroLayers.push(mk);
   });
 }
 
 function flyToBairro(nome){
   const entry = BAIRRO_COORDS[nome];
-  if(!entry || !leafCalor) return;
-  leafCalor.flyTo([entry[0], entry[1]], 14, {duration:.8});
+  if(!entry || !gMap) return;
+  gMap.panTo({lat: entry[0], lng: entry[1]});
+  gMap.setZoom(14);
 }
 
 
@@ -1895,8 +2003,8 @@ function flyToBairro(nome){
 const DIST_LAPA = {"VILA MARIANA": 8.5, "BELA VISTA": 5.6, "LIBERDADE": 6.0, "MOOCA": 8.6, "TATUAPÉ": 11.0, "SANTANA": 6.0, "PERDIZES": 2.3, "JARDIM PAULISTA": 5.7, "CAMBUCI": 7.5, "PINHEIROS": 4.3, "CERQUEIRA CÉSAR": 3.8, "BARRA FUNDA": 1.8, "VILA DA SAÚDE": 10.5, "CONSOLAÇÃO": 4.0, "IPIRANGA": 10.2, "SANTO AMARO": 14.7, "ACLIMAÇÃO": 7.0, "POMPEIA": 0.8, "VILA PRUDENTE": 11.0, "BRÁS": 6.6, "VILA ANDRADE": 13.9, "BELENZINHO": 8.5, "INDIANÓPOLIS": 8.9, "MOEMA": 8.4, "ITAIM BIBI": 6.9, "BROOKLIN": 11.1, "ÁGUA BRANCA": 0.0, "ITAQUERA": 22.9, "PARAÍSO": 6.8, "CAMPO BELO": 10.8, "HIGIENÓPOLIS": 3.3, "VILA CARRÃO": 13.4, "CASA VERDE": 4.4, "PENHA DE FRANÇA": 14.9, "LAPA": 2.5, "LIMÃO": 3.4, "REPÚBLICA": 4.7, "SAÚDE": 10.4, "MORUMBI": 10.9, "CIDADE MONÇÕES": 9.7, "ALTO DA MOOCA": 9.1, "TUCURUVI": 8.0, "SUMAREZINHO": 1.8, "JARDINS": 5.7, "BUTANTÃ": 6.9, "JABAQUARA": 13.4, "VILA FORMOSA": 14.1, "SUMARÉ": 1.8, "VILA MADALENA": 3.8, "JARDIM AMERICA": 5.9, "VILA GUILHERME": 7.9, "CAMPOS ELÍSEOS": 4.0, "VILA LEOPOLDINA": 4.1, "ALTO DE PINHEIROS": 4.5, "PACAEMBU": 2.3, "VILA MAZZEI": 6.9, "PARQUE MANDAQUI": 7.5, "IMIRIM": 7.3, "LAUZANE PAULISTA": 7.8, "FREGUESIA DO Ó": 3.5, "VILA MARIA": 7.7, "PARQUE NOVO MUNDO": 8.7, "VILA GUSTAVO": 8.2, "PARADA INGLESA": 8.0, "VILA DOM PEDRO I": 10.4, "SACOMÃ": 14.9, "ALTO DA LAPA": 4.7, "LAPA DE BAIXO": 3.7, "VILA ANASTÁCIO": 4.7, "JAGUARÉ": 7.1, "VILA PIRITUBA": 7.5, "PIRITUBA": 8.3, "BRASILÂNDIA": 6.8, "MANDAQUI": 7.2, "TREMEMBÉ": 10.4, "VILA MEDEIROS": 8.8, "CANGAÍBA": 15.3, "JARDIM ANDARAÍ": 5.1, "BOM RETIRO": 4.6, "SÉ": 5.6, "CENTRO": 5.6, "LUZ": 5.0, "PLANALTO PAULISTA": 10.9, "CURSINO": 12.1, "PARQUE BRISTOL": 15.1, "JARDIM MARAJOARA": 15.5, "REAL PARQUE": 11.3, "BROOKLIN PAULISTA": 11.1, "VILA CLEMENTINO": 9.1, "MIRANDÓPOLIS": 10.0, "CAMPO GRANDE": 18.8, "SOCORRO": 17.6, "CIDADE ADEMAR": 16.6, "AMERICANÓPOLIS": 15.8, "PARAISÓPOLIS": 12.7, "GUAIANAZES": 31.0, "CIDADE TIRADENTES": 29.8, "JARDIM ÂNGELA": 20.3, "SAPOPEMBA": 20.3, "CIDADE LÍDER": 23.6, "PARQUE SÃO JORGE": 18.2, "PENHA DE FRANCA": 14.9, "BELÉM": 11.2, "CATUMBI": 7.3, "CARANDIRU": 5.3, "PARI": 7.0, "VILA MARIA ALTA": 7.7, "JARDIM SÃO PAULO": 10.2};
 
 const RAIO_CONFIG = [
-  {label:'até 5 km',  max:5,   color:'#4338CA', bg:'#EEF0FF'},
-  {label:'5–10 km',   max:10,  color:'#0891B2', bg:'#E0F7FA'},
+  {label:'até 5 km',  max:5,   color:'#4E2096', bg:'#EEF0FF'},
+  {label:'5–10 km',   max:10,  color:'#7CA5D8', bg:'#E0F7FA'},
   {label:'10–20 km',  max:20,  color:'#F59E0B', bg:'#FEF3C7'},
   {label:'+ 20 km',   max:9999,color:'#EF4444', bg:'#FEE2E2'},
 ];
@@ -1959,14 +2067,11 @@ function renderRaioCards(mesIdx){
 updateLapa();
 renderLineLapa();
 renderDonutLapa();
-setTimeout(initMapaCalor, 300);
 renderRows('lapa');
 renderRows('bar');
 updateResumo();
 renderChart();
-renderKPIsBar();
-renderTabelaBar();
-renderChartsBar();
+
 </script>
 </body>
 </html>
