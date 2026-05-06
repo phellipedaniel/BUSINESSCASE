@@ -323,6 +323,145 @@ footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25r
 .ganho-title{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:3px;font-family:'Gooper',Georgia,serif;}
 .ganho-desc{font-size:11px;color:var(--text-secondary);line-height:1.4;}
 
+
+
+/* ============================================================
+   RESPONSIVE — Mobile first
+   Breakpoints: 768px (tablet), 480px (mobile)
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  /* ── Header ── */
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .875rem 1.25rem .75rem;
+  }
+  .app-header h1 { font-size: 18px; }
+  .header-eyebrow { font-size: 9px; }
+  .header-sub { font-size: 10px; gap: 8px; }
+
+  /* ── Tabs: scroll horizontal ── */
+  .tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { white-space: nowrap; font-size: 11px; padding: 5px 14px; }
+
+  /* ── Conteúdo ── */
+  .tab-content { padding: 1rem; }
+
+  /* ── KPIs ── */
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .kpi-value { font-size: 22px; }
+
+  /* ── Raio cards: inline override ── */
+  #raio-cards { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* ── Mapa + ranking: empilhar ── */
+  .section [style*="display:flex;height:520px"],
+  [style*="display:flex;height:520px"] {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  #map-calor { height: 300px !important; }
+  [style*="width:260px;flex-shrink:0;border-left"] {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border);
+    max-height: 220px;
+  }
+  #tbody-lapa { max-height: 220px; }
+
+  /* ── Seções ── */
+  .section { padding: 1rem; }
+  .section-title { font-size: 9px; }
+
+  /* ── Grid 2 cols ── */
+  .grid-2    { grid-template-columns: 1fr; }
+  .calc-grid { grid-template-columns: 1fr; }
+  .kpi-row-map { grid-template-columns: 1fr 1fr; }
+
+  /* ── Fluxo: modelos lado a lado → empilhar ── */
+  [style*="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Ciclo de reposição: barras horizontais ── */
+  [style*="display:flex;align-items:center;gap:10px;margin-bottom:6px"],
+  [style*="display:flex;align-items:center;gap:10px"] {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* ── Tabela semana-row ── */
+  .semana-row {
+    grid-template-columns: 60px 1fr 1fr 1fr 80px 24px !important;
+    font-size: 11px;
+  }
+  .semana-row > div:nth-child(5),
+  .semana-row > div:nth-child(6) { display: none; }
+
+  /* ── Charts ── */
+  canvas { max-height: 200px; }
+
+  /* ── Tabelas ── */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { font-size: 12px; }
+  th, td { padding: 6px 8px; }
+
+  /* ── Fluxo nós ── */
+  .fluxo-wrap { flex-direction: column; }
+  .flx-tags { gap: 4px; }
+  .flx-tag { font-size: 9px; }
+  .ganho-item { flex-direction: column; gap: 6px; }
+
+  /* ── Botões ── */
+  .add-btn { font-size: 11px; padding: 4px 12px; }
+}
+
+@media (max-width: 480px) {
+
+  /* ── Header ainda mais compacto ── */
+  .app-header { padding: .75rem 1rem .625rem; }
+  .app-header h1 { font-size: 16px; }
+  .header-sub { display: none; } /* oculta métricas no header em tela muito pequena */
+
+  /* ── KPIs: 1 coluna ── */
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi { padding: .875rem 1rem; }
+  .kpi-value { font-size: 20px; }
+
+  /* ── Raio: 2 cols mantém ── */
+
+  /* ── Mapa menor ── */
+  #map-calor { height: 240px !important; }
+
+  /* ── Tab content ── */
+  .tab-content { padding: .75rem; }
+
+  /* ── Seções ── */
+  .section { padding: .875rem; border-radius: 8px; }
+
+  /* ── Semana-row simplificado ── */
+  .semana-row {
+    grid-template-columns: 50px 1fr 1fr 70px 22px !important;
+  }
+  .semana-row > div:nth-child(4),
+  .semana-row > div:nth-child(5) { display: none; }
+
+  /* ── Ganhos: grid 1 col ── */
+  [style*="repeat(auto-fit,minmax(200px,1fr))"] {
+    grid-template-columns: 1fr !important;
+  }
+}
 </style>
 </head>
 <body>
