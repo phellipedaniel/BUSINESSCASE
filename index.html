@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petlove — Análise Logística SP 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#EFEFEF;
+  --surface:#FFFFFF;
+  --border:#E0E0E0;
+  --border-strong:#CCCCCC;
+  --text-primary:#1A1A1A;
+  --text-secondary:#666666;
+  --text-tertiary:#999999;
+  --accent:#5B4FE8;
+  --accent-light:#ECEAFF;
+  --success:#1B7A3E;
+  --success-light:#E6F7ED;
+  --danger:#C0392B;
+  --danger-light:#FDE8E8;
+  --warn:#D97706;
+  --warn-light:#FEF3C7;
+  --neutral-light:#F5F5F5;
+  --neutral:#999999;
+  --header:#4A3899;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;line-height:1.5;min-height:100vh;}
+
+/* HEADER */
+.app-header{
+  background:var(--header);
+  padding:.75rem 2rem .5rem;
+}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.header-eyebrow{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px;}
+.app-header h1{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;line-height:1.15;}
+.header-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px;}
+.header-meta{display:flex;gap:20px;font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;}
+.header-meta b{color:rgba(255,255,255,.9);}
+
+/* TABS no header */
+.tabs{
+  background:var(--header);
+  display:flex;gap:4px;
+  padding:.5rem 2rem 0;
+  border-bottom:none;
+}
+.tab-btn{
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+  color:rgba(255,255,255,.6);
+  background:none;border:none;
+  padding:7px 16px 9px;
+  border-radius:6px 6px 0 0;
+  cursor:pointer;transition:all .15s;
+  border-bottom:3px solid transparent;
+}
+.tab-btn:hover{color:#fff;background:rgba(255,255,255,.08);}
+.tab-btn.active{
+  color:#fff;
+  background:rgba(255,255,255,.15);
+  border-bottom:3px solid #fff;
+}
+
+
+
+/* CONTENT */
+.tab-content{display:none;padding:1.5rem 2rem;}
+.tab-content.active{display:block;}
+
+/* KPIS */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.5rem;}
+.kpi{background:#fff;border-radius:8px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.kpi-label{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.kpi-value{font-size:28px;font-weight:800;color:var(--text-primary);line-height:1.1;letter-spacing:-.5px;}
+.kpi-value.green{color:var(--success);}
+.kpi-value.red{color:var(--danger);}
+.kpi-value.blue{color:#1A6BFA;}
+.kpi-sub{font-size:11px;color:var(--text-tertiary);margin-top:5px;}
+
+/* SECTION */
+.section{background:#fff;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.section-title{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;}
+
+/* CONTROLS */
+.controls{display:flex;gap:8px;margin-bottom:1rem;align-items:center;flex-wrap:wrap;}
+.controls label{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.07em;}
+select,input[type="text"]{
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  padding:5px 12px;border:1px solid var(--border-strong);
+  border-radius:20px;background:#fff;color:var(--text-primary);
+  outline:none;height:32px;
+}
+select:focus,input:focus{border-color:var(--accent);}
+input[type="text"]{width:180px;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.07em;padding:9px 10px;border-bottom:2px solid var(--border);white-space:nowrap;}
+td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-primary);white-space:nowrap;}
+tr:hover td{background:var(--neutral-light);}
+td[contenteditable="true"]{outline:none;cursor:text;}
+td[contenteditable="true"]:focus{background:#EEF0FF;border-radius:3px;}
+.edit-hint{font-size:11px;color:var(--text-tertiary);margin-bottom:8px;}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-up{color:var(--success);background:var(--success-light);}
+.badge-dn{color:var(--danger);background:var(--danger-light);}
+.badge-eq{color:var(--neutral);background:var(--neutral-light);}
+.badge-warn{color:var(--warn);background:var(--warn-light);}
+
+/* MINI BAR */
+.mini-bar{height:5px;background:var(--accent);border-radius:3px;}
+
+/* LEGEND */
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);font-weight:500;}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* DELTA */
+.delta-pos{color:var(--success);font-weight:700;}
+.delta-neg{color:var(--danger);font-weight:700;}
+.delta-zero{color:var(--neutral);}
+
+/* FOOTER */
+footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:1.25rem 2rem;border-top:1px solid var(--border);background:#fff;margin-top:.5rem;}
+
+/* GRID 2COL */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start;}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr;}}
+.mapa-layout{display:flex;height:calc(100vh - 96px);}
+.mapa-sidebar{width:290px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.kpi-row-map{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem;}
+.kpi-map{background:var(--neutral-light);border-radius:6px;padding:.65rem .9rem;}
+.kpi-map .kpi-label{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.kpi-map .kpi-value{font-size:18px;font-weight:800;color:var(--text-primary);}
+.kpi-map .kpi-sub{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
+.raio-leg-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);margin-bottom:5px;font-weight:500;}
+.raio-dot-leg{width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0;}
+.loja-card-map{border:1px solid var(--border);border-radius:6px;padding:.55rem .85rem;margin-bottom:5px;cursor:pointer;transition:all .15s;}
+.loja-card-map:hover{border-color:var(--accent);background:var(--bg);}
+.loja-card-map.active{border-color:var(--accent);border-width:2px;background:var(--accent-light);}
+.loja-nome-map{font-size:13px;font-weight:600;margin-bottom:2px;}
+.loja-meta-map{display:flex;gap:6px;align-items:center;}
+.loja-km-map{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
+.badgem{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;}
+.badgem-v{color:#15803D;background:#DCFCE7;}
+.badgem-a{color:#92400E;background:#FEF3C7;}
+.badgem-r{color:#B91C1C;background:#FEE2E2;}
+.badgem-c{color:#5A5A72;background:#F1F0F5;}
+#map-barueri{flex:1;}
+.leaflet-popup-content-wrapper{border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;box-shadow:0 4px 24px rgba(0,0,0,.12);}
+.leaflet-popup-content{margin:12px 16px;}
+.popup-nome{font-weight:700;font-size:14px;margin-bottom:6px;color:#111;}
+.popup-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:3px;font-size:12px;color:#666;}
+.popup-row span:last-child{font-weight:600;color:#111;font-family:'DM Mono',monospace;}
+
+
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+.semana-row{display:grid;grid-template-columns:80px repeat(6,1fr) 90px 28px;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.semana-row.header{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--border-strong);}
+.semana-row input{font-family:'DM Mono',monospace;font-size:12px;padding:4px 7px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text-primary);width:100%;text-align:right;}
+.semana-row input:focus{border-color:var(--accent);outline:none;background:var(--accent-light);}
+.semana-label{font-size:12px;font-weight:600;color:var(--text-secondary);}
+.custo-total{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-align:right;color:var(--text-primary);}
+.custo-ganho{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-align:right;color:var(--success);}
+.model-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.model-tag{font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;}
+.tag-lapa{color:#1e40af;background:#dbeafe;}
+.tag-barueri{color:#14532d;background:#dcfce7;}
+.resumo-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.5rem;}
+.r-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.r-card.green{border-left:4px solid #1B7A3E;background:#f0fdf4;}
+.r-label{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.r-value{font-size:22px;font-weight:800;color:var(--text-primary);}
+.r-value.green{color:var(--success);}
+.r-sub{font-size:10px;color:var(--text-tertiary);margin-top:3px;}
+.add-btn{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:5px 16px;border:1.5px solid var(--border-strong);border-radius:20px;background:var(--bg);color:var(--text-secondary);cursor:pointer;margin-top:8px;transition:all .15s;}
+.add-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)!important;}
+.del-btn{font-size:12px;color:var(--danger);background:none;border:none;cursor:pointer;padding:0 2px;opacity:.6;}
+.del-btn:hover{opacity:1;}
+
+
+
+.vel-bar-wrap{display:flex;align-items:center;gap:8px;}
+.vel-bar{height:8px;border-radius:4px;min-width:4px;transition:width .3s;}
+.vel-bar.lapa{background:#EF4444;}
+.vel-bar.bar{background:#22C55E;}
+.tl-row{display:flex;align-items:center;gap:0;margin-bottom:12px;}
+.tl-label{width:140px;font-size:12px;font-weight:600;color:var(--text-secondary);flex-shrink:0;}
+.tl-track{flex:1;display:flex;height:28px;border-radius:4px;overflow:hidden;position:relative;background:#F5F5F5;}
+.tl-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;height:100%;transition:width .4s;}
+.tl-legend{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+.tl-leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);}
+.tl-dot{width:12px;height:12px;border-radius:2px;}
+.gain-cell{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;}
+.gain-pos{color:#15803D;}
+.gain-neg{color:#B91C1C;}
+.gain-zero{color:#999;}
+
+
+.fluxo-wrap{display:flex;align-items:stretch;gap:0;margin:1rem 0;}
+.fluxo-node{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:1rem 1.25rem;flex:1;text-align:center;position:relative;}
+.fluxo-node.atual{border-color:#EF4444;background:#FFF5F5;}
+.fluxo-node.novo{border-color:#22C55E;background:#F0FDF4;}
+.fluxo-node.hub{border-color:#5B4FE8;background:#F5F3FF;}
+.fluxo-arrow{display:flex;align-items:center;padding:0 6px;color:var(--text-tertiary);font-size:18px;}
+.fluxo-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.fluxo-value{font-size:20px;font-weight:800;line-height:1.1;margin-bottom:3px;}
+.fluxo-sub{font-size:11px;color:var(--text-secondary);}
+.fluxo-node.atual .fluxo-value{color:#B91C1C;}
+.fluxo-node.novo .fluxo-value{color:#15803D;}
+.fluxo-node.hub .fluxo-value{color:#4338CA;}
+.modelo-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:.75rem;}
+.modelo-label.atual{color:#B91C1C;background:#FEE2E2;}
+.modelo-label.novo{color:#15803D;background:#DCFCE7;}
+.cobertura-bar{height:12px;border-radius:6px;background:#E5E7EB;margin:6px 0;overflow:hidden;}
+.cobertura-fill{height:100%;border-radius:6px;transition:width .4s;}
+.estoque-card{background:#F5F3FF;border:1.5px solid #C4B5FD;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.estoque-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:.75rem;}
+.est-item{background:#fff;border-radius:8px;padding:.75rem 1rem;text-align:center;}
+.est-value{font-size:20px;font-weight:800;color:#4338CA;}
+.est-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-tertiary);margin-top:3px;}
+
+
+.flx-node{display:flex;align-items:flex-start;gap:12px;background:var(--bg);border-radius:10px;padding:1rem 1.1rem;position:relative;}
+.flx-node-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.flx-node-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
+.flx-node-sub{font-size:11px;color:var(--text-secondary);}
+.flx-red{background:#FFF5F5;border:1px solid #FECACA;}
+.flx-orange{background:#FFFBEB;border:1px solid #FDE68A;}
+.flx-green{background:#F0FDF4;border:1px solid #A7F3D0;}
+.flx-teal{background:#F0FDFA;border:1px solid #99F6E4;}
+.flx-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.flx-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;}
+.flx-tag-red{color:#B91C1C;background:#FEE2E2;}
+.flx-tag-orange{color:#92400E;background:#FEF3C7;}
+.flx-tag-green{color:#065F46;background:#D1FAE5;}
+.flx-tag-teal{color:#0E7490;background:#CFFAFE;}
+.flx-arrow-wrap{display:flex;flex-direction:column;align-items:center;margin:8px 0;gap:0;}
+.flx-arrow-line{width:2px;height:14px;}
+.flx-arrow-red{background:#EF4444;}
+.flx-arrow-green{background:#22C55E;}
+.flx-arrow-info{font-size:11px;padding:4px 12px;border-radius:20px;margin:2px 0;text-align:center;}
+.flx-arrow-info-red{color:#B91C1C;background:#FEE2E2;}
+.flx-arrow-info-green{color:#065F46;background:#D1FAE5;}
+.flx-arrow-head{font-size:12px;line-height:1;}
+.flx-arrow-head-red{color:#EF4444;}
+.flx-arrow-head-green{color:#22C55E;}
+.ganho-item{display:flex;align-items:flex-start;gap:10px;padding:.85rem;background:var(--bg);border-radius:10px;}
+.ganho-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.ganho-title{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+.ganho-desc{font-size:11px;color:var(--text-secondary);line-height:1.4;}
+
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="header-eyebrow">Petlove Logística &nbsp;·&nbsp; Jan/2026 – Hoje</div>
+      <h1>Business Case — Hub's Petlove</h1>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('lapa')">Vendas Hub Lapa por Bairro</button>
+  <button class="tab-btn" onclick="switchTab('fluxo')">Fluxo de Abastecimento de Lojas</button>
+  <button class="tab-btn" onclick="switchTab('abastecimento')">Calculadora de Custos entre Modelos</button>
+</div>
+
+  <div class="filter-row">
+    <span class="filter-label">Período</span>
+    <span class="pill active" onclick="togglePill(this,'jan')">Jan</span>
+    <span class="pill active" onclick="togglePill(this,'fev')">Fev</span>
+    <span class="pill active" onclick="togglePill(this,'mar')">Mar</span>
+    <span class="pill active" onclick="togglePill(this,'abr')">Abr</span>
+    <span class="pill active" onclick="togglePill(this,'mai')">Mai</span>
+  </div>
+</div>
+
+<!-- ===================== ABA 1: LAPA ===================== -->
+<div id="tab-lapa" class="tab-content active">
+
+  <!-- FILTROS FIXOS NO TOPO -->
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.07em;">Período:</div>
+    <select id="sel-mes" style="font-family:Inter,sans-serif;font-size:13px;font-weight:500;padding:5px 12px;border:1px solid var(--border-strong);border-radius:20px;background:#fff;color:var(--text-primary);outline:none;height:32px;cursor:pointer;">
+      <option value="total">Total geral (Jan–Mai)</option>
+      <option value="0">Janeiro</option>
+      <option value="1">Fevereiro</option>
+      <option value="2">Março</option>
+      <option value="3">Abril</option>
+      <option value="4">Maio</option>
+    </select>
+    <input type="text" id="busca" placeholder="Buscar bairro..." style="font-family:Inter,sans-serif;font-size:13px;padding:5px 12px;border:1px solid var(--border-strong);border-radius:20px;background:#fff;color:var(--text-primary);outline:none;height:32px;width:200px;">
+  </div>
+
+  <!-- KPIS -->
+  <div class="kpis" id="kpis-lapa" style="margin-bottom:1.25rem;"></div>
+
+
+  <!-- DISTRIBUIÇÃO POR FAIXA DE RAIO -->
+  <div class="section" style="margin-bottom:1.25rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+      <div class="section-title" style="margin-bottom:0;">Distribuição de vendas por faixa de raio — Hub Lapa</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">Calculado com base na distância em linha reta de cada bairro ao Hub</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;" id="raio-cards"></div>
+    <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;width:100%;" id="raio-bar-total"></div>
+    <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;" id="raio-legend"></div>
+  </div>
+
+  <!-- MAPA + RANKING LADO A LADO -->
+  <div class="section" style="padding:0;overflow:hidden;margin-bottom:1.5rem;">
+    <div style="padding:.75rem 1.25rem .6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div class="section-title" style="margin-bottom:1px;">Mapa de calor — pedidos por bairro</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">Círculos proporcionais ao volume · Hub Lapa marcado em vermelho</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="r5" checked> <span style="width:12px;height:3px;background:#22C55E;display:inline-block;border-radius:2px;"></span> 5km</label>
+        <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="r10" checked> <span style="width:12px;height:3px;background:#F59E0B;display:inline-block;border-radius:2px;"></span> 10km</label>
+        <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="r20" checked> <span style="width:12px;height:3px;background:#EF4444;display:inline-block;border-radius:2px;"></span> 20km</label>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-tertiary);">
+          <span style="width:9px;height:9px;border-radius:50%;background:#22C55E;display:inline-block;"></span> baixo
+          <span style="width:13px;height:13px;border-radius:50%;background:#F59E0B;display:inline-block;margin-left:4px;"></span> médio
+          <span style="width:17px;height:17px;border-radius:50%;background:#EF4444;display:inline-block;margin-left:4px;"></span> alto
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;height:520px;">
+      <div id="map-calor" style="flex:1;min-width:0;"></div>
+      <div style="width:260px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .4rem;border-bottom:1px solid var(--border);">Ranking de bairros</div>
+        <div id="tbody-lapa" style="overflow-y:auto;flex:1;padding:0 .5rem .5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-title">Evolução mensal — top 5 bairros</div>
+      <div class="legend" id="leg5"></div>
+      <div style="position:relative;width:100%;height:240px;">
+        <canvas id="chart-line" role="img" aria-label="Evolução mensal top 5 bairros">Evolução top 5.</canvas>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Top 10 vs demais</div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="chart-donut" role="img" aria-label="Distribuição top 10 vs demais">Distribuição.</canvas>
+      </div>
+      <div id="donut-legend" style="margin-top:12px;font-size:12px;"></div>
+    </div>
+  </div>
+
+</div>
+
+
+
+<!-- ===================== ABA 3: ABASTECIMENTO ===================== -->
+<div id="tab-abastecimento" class="tab-content">
+
+  <div class="resumo-cards" id="res-cards"></div>
+
+  <div class="section" style="margin-bottom:1.5rem;">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:.5rem;">
+      <div class="section-title" style="margin-bottom:0;">Premissas globais</div>
+    </div>
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;margin-top:.5rem;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">Custo/km padrão Lapa (R$)</label>
+        <input type="number" id="glob-custo-lapa" value="4.50" step="0.10" min="0" style="width:80px;font-family:'DM Mono',monospace;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text-primary);text-align:right;">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">Custo/km padrão Barueri (R$)</label>
+        <input type="number" id="glob-custo-bar" value="4.50" step="0.10" min="0" style="width:80px;font-family:'DM Mono',monospace;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text-primary);text-align:right;">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">KM Itapeva → Lapa</label>
+        <input type="number" id="glob-km-lapa" value="130" step="1" min="0" style="width:70px;font-family:'DM Mono',monospace;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text-primary);text-align:right;">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">KM Itapeva → Barueri</label>
+        <input type="number" id="glob-km-bar" value="130" step="1" min="0" style="width:70px;font-family:'DM Mono',monospace;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text-primary);text-align:right;">
+      </div>
+    </div>
+  </div>
+
+  <div class="calc-grid">
+
+    <!-- MODELO LAPA -->
+    <div class="section">
+      <div class="model-header">
+        <span class="section-title" style="margin-bottom:0;">Modelo atual — Itapeva → Lapa</span>
+        <span class="model-tag tag-lapa">Via Lapa</span>
+      </div>
+      <div class="semana-row header">
+        <div>Semana</div>
+        <div style="text-align:right;">Veículos</div>
+        <div style="text-align:right;">KM/viagem</div>
+        <div style="text-align:right;">Custo/km</div>
+        <div style="text-align:right;">Pallets</div>
+        <div style="text-align:right;">Freq/loja</div>
+        <div style="text-align:right;">Trânsito</div>
+        <div style="text-align:right;">Custo total</div>
+        <div></div>
+      </div>
+      <div id="rows-lapa"></div>
+      <button class="add-btn" onclick="addRow('lapa')">+ Adicionar semana</button>
+      <div style="margin-top:1rem;padding-top:.75rem;border-top:0.5px solid var(--border-strong);display:flex;justify-content:space-between;font-size:13px;">
+        <span style="color:var(--text-secondary);">Total acumulado</span>
+        <span id="total-lapa" style="font-family:'DM Mono',monospace;font-weight:600;">R$ 0</span>
+      </div>
+    </div>
+
+    <!-- MODELO BARUERI -->
+    <div class="section">
+      <div class="model-header">
+        <span class="section-title" style="margin-bottom:0;">Modelo proposto — Barueri → Lojas</span>
+        <span class="model-tag tag-barueri">Via Barueri</span>
+      </div>
+      <div class="semana-row header">
+        <div>Semana</div>
+        <div style="text-align:right;">Veículos</div>
+        <div style="text-align:right;">KM/viagem</div>
+        <div style="text-align:right;">Custo/km</div>
+        <div style="text-align:right;">Pallets</div>
+        <div style="text-align:right;">Freq/loja</div>
+        <div style="text-align:right;">Trânsito</div>
+        <div style="text-align:right;">Custo total</div>
+        <div></div>
+      </div>
+      <div id="rows-bar"></div>
+      <button class="add-btn" onclick="addRow('bar')">+ Adicionar semana</button>
+      <div style="margin-top:1rem;padding-top:.75rem;border-top:0.5px solid var(--border-strong);display:flex;justify-content:space-between;font-size:13px;">
+        <span style="color:var(--text-secondary);">Total acumulado</span>
+        <span id="total-bar" style="font-family:'DM Mono',monospace;font-weight:600;">R$ 0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evolução de custo semanal — Lapa vs Barueri</div>
+    <div style="display:flex;gap:16px;margin-bottom:10px;">
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#378ADD;display:inline-block;"></span>Via Lapa</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75;display:inline-block;"></span>Via Barueri</span>
+    </div>
+    <div style="position:relative;width:100%;height:240px;">
+      <canvas id="chart-calc" role="img" aria-label="Evolução custo Lapa vs Barueri">Evolução custos.</canvas>
+    </div>
+  </div>
+
+</div>
+
+
+
+<!-- ===================== ABA: FLUXO LOGÍSTICO ===================== -->
+<div id="tab-fluxo" class="tab-content">
+
+  <div style="text-align:center;margin-bottom:2rem;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Análise comparativa</div>
+    <h2 style="font-size:22px;font-weight:800;color:var(--text-primary);letter-spacing:-.3px;margin-bottom:6px;">Fluxo logístico — Modelo atual vs Proposto</h2>
+    <p style="font-size:13px;color:var(--text-secondary);max-width:600px;margin:0 auto;">Como as mercadorias chegam até as lojas hoje e como chegarão com o Hub Barueri como ponto de estoque regional.</p>
+  </div>
+
+  <!-- DOIS MODELOS LADO A LADO -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+
+    <!-- MODELO ATUAL -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #FECACA;overflow:hidden;box-shadow:0 2px 12px rgba(239,68,68,.08);">
+      <div style="background:linear-gradient(135deg,#B91C1C,#EF4444);padding:1.25rem 1.5rem;">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Modelo atual</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;">CD Itapeva → Hub Lapa → Lojas</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;">Cargas fracionadas · Alta frequência · Baixa agilidade</div>
+      </div>
+
+      <div style="padding:1.5rem;">
+        <!-- Nó 1: Itapeva -->
+        <div class="flx-node flx-red">
+          <div class="flx-node-icon">🏭</div>
+          <div class="flx-node-body">
+            <div class="flx-node-title">CD Itapeva — MG</div>
+            <div class="flx-node-sub">Centro de distribuição principal</div>
+            <div class="flx-tags" style="margin-top:6px;">
+              <span class="flx-tag flx-tag-red">15 saídas/semana</span>
+              <span class="flx-tag flx-tag-red">Cargas fracionadas</span>
+              <span class="flx-tag flx-tag-red">Sob demanda</span>
+              <span class="flx-tag flx-tag-red">✂️ Corte: 04:00h</span>
+              <span class="flx-tag flx-tag-red">🚫 Sem saída sábados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seta com info -->
+        <div class="flx-arrow-wrap">
+          <div class="flx-arrow-line flx-arrow-red"></div>
+          <div class="flx-arrow-info flx-arrow-info-red">
+            <div style="font-weight:700;">~130 km</div>
+            <div style="font-size:10px;opacity:.8;">~2.2h de trânsito</div>
+          </div>
+          <div class="flx-arrow-line flx-arrow-red"></div>
+          <div class="flx-arrow-head flx-arrow-head-red">▼</div>
+        </div>
+
+        <!-- Nó 2: Hub Lapa -->
+        <div class="flx-node flx-orange">
+          <div class="flx-node-icon">📦</div>
+          <div class="flx-node-body">
+            <div class="flx-node-title">Hub Lapa — GoodStorage</div>
+            <div class="flx-node-sub">Rua Mateo Forte, 216 · Água Branca</div>
+            <div class="flx-tags" style="margin-top:6px;">
+              <span class="flx-tag flx-tag-orange">Cross-docking apenas</span>
+              <span class="flx-tag flx-tag-orange">Sem estoque local</span>
+              <span class="flx-tag flx-tag-orange">Alta rotatividade</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seta com info -->
+        <div class="flx-arrow-wrap">
+          <div class="flx-arrow-line flx-arrow-red"></div>
+          <div class="flx-arrow-info flx-arrow-info-red">
+            <div style="font-weight:700;">~20 km médio</div>
+            <div style="font-size:10px;opacity:.8;">múltiplas rotas/dia</div>
+          </div>
+          <div class="flx-arrow-line flx-arrow-red"></div>
+          <div class="flx-arrow-head flx-arrow-head-red">▼</div>
+        </div>
+
+        <!-- Nó 3: Lojas -->
+        <div class="flx-node flx-red">
+          <div class="flx-node-icon">🏪</div>
+          <div class="flx-node-body">
+            <div class="flx-node-title">Lojas SP — 20 unidades</div>
+            <div class="flx-node-sub">Distribuídas em São Paulo e região</div>
+            <div class="flx-tags" style="margin-top:6px;">
+              <span class="flx-tag flx-tag-red">3x/semana freq. média</span>
+              <span class="flx-tag flx-tag-red">Lead time ~6.5h</span>
+              <span class="flx-tag flx-tag-red">Risco de ruptura alto</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Métricas resumo -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1.25rem;">
+          <div style="background:#FEF2F2;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#B91C1C;">15x</div>
+            <div style="font-size:9px;font-weight:700;color:#B91C1C;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">saídas/semana</div>
+          </div>
+          <div style="background:#FEF2F2;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#B91C1C;">~6.5h</div>
+            <div style="font-size:9px;font-weight:700;color:#B91C1C;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">lead time</div>
+          </div>
+          <div style="background:#FEF2F2;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#B91C1C;">04:00h</div>
+            <div style="font-size:9px;font-weight:700;color:#B91C1C;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">horário de corte</div>
+          </div>
+          <div style="background:#FEF2F2;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#B91C1C;">Seg–Sex</div>
+            <div style="font-size:9px;font-weight:700;color:#B91C1C;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">sem saída sábados</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODELO PROPOSTO -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #A7F3D0;overflow:hidden;box-shadow:0 2px 12px rgba(34,197,94,.08);">
+      <div style="background:linear-gradient(135deg,#065F46,#059669);padding:1.25rem 1.5rem;">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Modelo proposto</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;">CD Itapeva → Barueri → Lojas</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;">Cargas consolidadas · Estoque local · Alta agilidade</div>
+      </div>
+
+      <div style="padding:1.5rem;">
+        <!-- Nó 1: Itapeva -->
+        <div class="flx-node flx-green">
+          <div class="flx-node-icon">🏭</div>
+          <div class="flx-node-body">
+            <div class="flx-node-title">CD Itapeva — MG</div>
+            <div class="flx-node-sub">Centro de distribuição principal</div>
+            <div class="flx-tags" style="margin-top:6px;">
+              <span class="flx-tag flx-tag-green">~8 saídas/semana</span>
+              <span class="flx-tag flx-tag-green">Cargas consolidadas</span>
+              <span class="flx-tag flx-tag-green">Programado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seta -->
+        <div class="flx-arrow-wrap">
+          <div class="flx-arrow-line flx-arrow-green"></div>
+          <div class="flx-arrow-info flx-arrow-info-green">
+            <div style="font-weight:700;">~130 km</div>
+            <div style="font-size:10px;opacity:.8;">carga cheia · programada</div>
+          </div>
+          <div class="flx-arrow-line flx-arrow-green"></div>
+          <div class="flx-arrow-head flx-arrow-head-green">▼</div>
+        </div>
+
+        <!-- Nó 2: Hub Barueri -->
+        <div class="flx-node flx-teal" style="position:relative;">
+          <div class="flx-node-icon">🏬</div>
+          <div class="flx-node-body">
+            <div class="flx-node-title">Hub Barueri — Alphaville</div>
+            <div class="flx-node-sub">Estoque regional estratégico</div>
+            <div class="flx-tags" style="margin-top:6px;">
+              <span class="flx-tag flx-tag-teal">Estoque local 2–4 dias</span>
+              <span class="flx-tag flx-tag-teal">Reposição programada</span>
+              <span class="flx-tag flx-tag-teal">Buffer de segurança</span>
+            </div>
+          </div>
+          <div style="position:absolute;top:-8px;right:12px;background:#4338CA;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;">NOVO</div>
+        </div>
+
+        <!-- Seta -->
+        <div class="flx-arrow-wrap">
+          <div class="flx-arrow-line flx-arrow-green"></div>
+          <div class="flx-arrow-info flx-arrow-info-green">
+            <div style="font-weight:700;">~20 km médio</div>
+            <div style="font-size:10px;opacity:.8;">do estoque · sem esperar MG</div>
+          </div>
+          <div class="flx-arrow-line flx-arrow-green"></div>
+          <div class="flx-arrow-head flx-arrow-head-green">▼</div>
+        </div>
+
+        <!-- Nó 3: Lojas -->
+        <div class="flx-node flx-green">
+          <div class="flx-node-icon">🏪</div>
+          <div class="flx-node-body">
+            <div class="flx-node-title">Lojas SP — 20 unidades</div>
+            <div class="flx-node-sub">Distribuídas em São Paulo e região</div>
+            <div class="flx-tags" style="margin-top:6px;">
+              <span class="flx-tag flx-tag-green">5x/semana freq. média</span>
+              <span class="flx-tag flx-tag-green">Lead time ~3.2h</span>
+              <span class="flx-tag flx-tag-green">Risco de ruptura baixo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Métricas resumo -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:1.25rem;">
+          <div style="background:#ECFDF5;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#065F46;">~8x</div>
+            <div style="font-size:9px;font-weight:700;color:#065F46;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">saídas/semana</div>
+          </div>
+          <div style="background:#ECFDF5;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#065F46;">~3.2h</div>
+            <div style="font-size:9px;font-weight:700;color:#065F46;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">lead time</div>
+          </div>
+          <div style="background:#ECFDF5;border-radius:8px;padding:.7rem;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#065F46;">🟢 Baixo</div>
+            <div style="font-size:9px;font-weight:700;color:#065F46;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">risco ruptura</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GANHOS CONSOLIDADOS -->
+  <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+    <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">Resumo dos ganhos com o modelo proposto</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+      <div class="ganho-item">
+        <div class="ganho-icon" style="background:#EEF0FF;color:#4338CA;">⚡</div>
+        <div>
+          <div class="ganho-title">Velocidade de disponibilização</div>
+          <div class="ganho-desc">Lead time cai de ~6.5h para ~3.2h — <strong>51% mais rápido</strong> para o item chegar na prateleira</div>
+        </div>
+      </div>
+      <div class="ganho-item">
+        <div class="ganho-icon" style="background:#ECFDF5;color:#065F46;">📦</div>
+        <div>
+          <div class="ganho-title">Menos expedições de Itapeva</div>
+          <div class="ganho-desc">De 15x para ~8x saídas semanais — <strong>~45% menos acionamentos</strong> do CD</div>
+        </div>
+      </div>
+      <div class="ganho-item">
+        <div class="ganho-icon" style="background:#FEF3C7;color:#92400E;">🔄</div>
+        <div>
+          <div class="ganho-title">Maior frequência nas lojas</div>
+          <div class="ganho-desc">De 3x para 5x entregas por semana — <strong>+67% de frequência</strong> sem acionar MG</div>
+        </div>
+      </div>
+      <div class="ganho-item">
+        <div class="ganho-icon" style="background:#FEE2E2;color:#B91C1C;">🛡️</div>
+        <div>
+          <div class="ganho-title">Menor risco de ruptura</div>
+          <div class="ganho-desc">Estoque local de 2–4 dias em Barueri <strong>absorve variações</strong> de trânsito e demanda</div>
+        </div>
+      </div>
+      <div class="ganho-item">
+        <div class="ganho-icon" style="background:#F5F3FF;color:#6D28D9;">🎯</div>
+        <div>
+          <div class="ganho-title">Consolidação de carga</div>
+          <div class="ganho-desc">Cargas maiores e mais cheias saindo de MG — <strong>melhor custo/kg</strong> no frete</div>
+        </div>
+      </div>
+      <div class="ganho-item">
+        <div class="ganho-icon" style="background:#E0F7FA;color:#0891B2;">📍</div>
+        <div>
+          <div class="ganho-title">Proximidade às lojas</div>
+          <div class="ganho-desc">Barueri a ~20km médio das lojas vs ~140km do modelo anterior — <strong>120km a menos</strong> na última milha</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CICLO DE REPOSIÇÃO VISUAL -->
+  <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;">Ciclo de reposição — comparativo de etapas</div>
+      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:6px 14px;font-size:11px;color:#B91C1C;font-weight:600;">
+        ✂️ Corte atual: <b>04:00h</b> &nbsp;·&nbsp; 🚫 Sem expedição aos sábados
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.25rem;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div style="width:90px;font-size:11px;font-weight:600;color:#B91C1C;flex-shrink:0;">Atual</div>
+        <div style="flex:1;display:flex;height:32px;border-radius:6px;overflow:hidden;">
+          <div style="width:15%;background:#FBBF24;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Corte</div>
+          <div style="width:8%;background:#F97316;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Exp.</div>
+          <div style="width:28%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">Trânsito MG→SP</div>
+          <div style="width:14%;background:#EC4899;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Picking</div>
+          <div style="width:20%;background:#8B5CF6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">Entrega loja</div>
+          <div style="width:15%;background:#D1D5DB;display:flex;align-items:center;justify-content:center;font-size:9px;color:#555;">Disponível</div>
+        </div>
+        <div style="width:50px;font-size:12px;font-weight:800;color:#B91C1C;flex-shrink:0;">~6.5h</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:90px;font-size:11px;font-weight:600;color:#065F46;flex-shrink:0;">Proposto</div>
+        <div style="flex:1;display:flex;height:32px;border-radius:6px;overflow:hidden;">
+          <div style="width:15%;background:#FBBF24;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Corte</div>
+          <div style="width:8%;background:#F97316;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Exp.</div>
+          <div style="width:15%;background:#F87171;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">MG→Bar.</div>
+          <div style="width:10%;background:#EC4899;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Pick</div>
+          <div style="width:8%;background:#34D399;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">Entrega</div>
+          <div style="width:44%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#065F46;">✓ Disponível mais cedo</div>
+        </div>
+        <div style="width:50px;font-size:12px;font-weight:800;color:#065F46;flex-shrink:0;">~3.2h</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);"><div style="width:10px;height:10px;border-radius:2px;background:#FBBF24;"></div>Corte do pedido</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);"><div style="width:10px;height:10px;border-radius:2px;background:#F97316;"></div>Expedição MG</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);"><div style="width:10px;height:10px;border-radius:2px;background:#EF4444;"></div>Trânsito LH</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);"><div style="width:10px;height:10px;border-radius:2px;background:#EC4899;"></div>Picking Hub</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);"><div style="width:10px;height:10px;border-radius:2px;background:#8B5CF6;"></div>Entrega loja</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);"><div style="width:10px;height:10px;border-radius:2px;background:#34D399;"></div>Entrega ágil (Barueri)</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Dados internos Petlove &nbsp;·&nbsp; Jan–Mai 2026 &nbsp;·&nbsp; Células editáveis — clique para alterar</footer>
+
+<script>
+
+
+/* ===== TAB SWITCH ===== */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+/* ===== ABA 1: LAPA ===== */
+const RAW_LAPA = [
+  ["VILA MARIANA",189,106,159,246,21],
+  ["BELA VISTA",199,142,152,186,21],
+  ["LIBERDADE",180,131,136,156,25],
+  ["MOOCA",191,112,160,112,10],
+  ["TATUAPÉ",159,114,157,133,16],
+  ["TATUAPE",154,104,147,124,14],
+  ["SANTANA",140,112,112,149,9],
+  ["PERDIZES",110,87,126,181,11],
+  ["JARDIM PAULISTA",114,95,125,151,22],
+  ["CAMBUCI",136,94,82,128,12],
+  ["PINHEIROS",83,64,96,164,13],
+  ["CERQUEIRA CÉSAR",97,78,92,121,21],
+  ["BARRA FUNDA",80,72,104,125,15],
+  ["VILA DA SAÚDE",75,66,99,144,8],
+  ["CONSOLAÇÃO",109,73,76,116,14],
+  ["IPIRANGA",99,64,85,125,14],
+  ["SANTO AMARO",96,59,85,127,11],
+  ["ACLIMAÇÃO",86,78,83,95,20],
+  ["POMPEIA",65,71,84,125,11],
+  ["VILA PRUDENTE",95,69,97,75,7],
+  ["SANTA CECILIA",82,64,81,95,11],
+  ["BRÁS",122,71,69,62,3],
+  ["VILA ANDRADE",72,54,63,115,11],
+  ["BELENZINHO",97,62,89,64,3],
+  ["BRAS",116,66,67,56,3],
+  ["SANTA CECÍLIA",81,54,70,87,10],
+  ["INDIANÓPOLIS",69,38,75,99,9],
+  ["MOEMA",64,37,74,104,9],
+  ["CONSOLACAO",87,56,51,81,11],
+  ["VILA DA SAUDE",51,47,73,105,6],
+  ["ITAIM BIBI",67,46,56,96,15],
+  ["CENTRO HISTÓRICO DE SÃO PAULO",82,51,54,85,6],
+  ["BROOKLIN",70,38,57,94,17],
+  ["CERQUEIRA CESAR",65,47,66,82,9],
+  ["VILA GOMES CARDIM",69,57,63,59,7],
+  ["ÁGUA BRANCA",50,43,49,96,11],
+  ["ITAQUERA",65,35,64,79,5],
+  ["PARAÍSO",55,41,51,89,10],
+  ["CAMPO BELO",60,32,50,87,9],
+  ["VILA BUARQUE",62,53,45,67,7],
+  ["INDIANOPOLIS",56,30,63,76,8],
+  ["HIGIENÓPOLIS",59,44,49,69,5],
+  ["ACLIMACAO",58,45,55,55,13],
+  ["VILA CARRÃO",57,53,55,53,7],
+  ["VILA GUILHERME",80,41,31,51,8],
+  ["CAMPOS ELÍSEOS",42,40,49,69,7],
+  ["CASA VERDE",45,42,52,57,5],
+  ["PENHA DE FRANÇA",56,36,50,51,7],
+  ["LAPA",29,32,45,82,8],
+  ["VILA MONUMENTO",49,39,41,63,2],
+  ["VILA ROMANA",26,37,36,86,8],
+  ["LIMÃO",42,33,45,66,5],
+  ["REPÚBLICA",48,36,35,56,7],
+  ["VILA EMA",52,39,41,43,6],
+  ["AGUA BRANCA",36,25,41,69,6],
+  ["SAÚDE",36,33,35,68,4],
+  ["MORUMBI",40,29,37,61,8],
+  ["CIDADE MONÇÕES",34,40,34,58,9],
+  ["ALTO DA MOOCA",49,29,56,38,3],
+  ["TUCURUVI",45,27,37,53,6],
+  ["PARAISO",40,30,32,59,4],
+  ["SUMAREZINHO",36,33,29,60,5],
+  ["SÉ",51,33,26,48,4],
+  ["VILA REG. FEIJÓ",46,31,37,42,5],
+  ["JARDIM AMERICA",21,30,35,65,10],
+  ["VILA CARMOSINA",48,22,41,47,1],
+  ["JABAQUARA",31,28,33,60,6],
+  ["CAMPOS ELISEOS",33,26,41,52,6],
+  ["BROOKLIN PAULISTA",37,26,36,47,10],
+  ["VILA FORMOSA",42,29,43,36,4],
+  ["SUMARÉ",31,29,32,60,2],
+  ["VILA CARRAO",42,35,47,27,2],
+  ["IMIRIM",35,29,31,48,10],
+  ["BOM RETIRO",29,41,30,47,6],
+  ["VILA MARIA ALTA",49,35,17,44,4],
+  ["VILA MATILDE",33,30,42,40,3],
+  ["PARQUE MANDAQUI",32,31,31,48,6],
+  ["VILA MARIA",35,29,28,50,4],
+  ["BUTANTÃ",33,31,32,40,10],
+  ["VILA BERTIOGA",39,30,34,38,3],
+  ["JARDINS",31,22,49,38,4],
+  ["LAUZANE PAULISTA",33,32,27,45,5],
+  ["VILA LEOPOLDINA",28,27,37,45,4],
+  ["CENTRO",40,33,32,33,1],
+  ["VILA CLEMENTINO",33,21,29,51,4],
+  ["JARDIM SÃO PAULO",29,29,23,50,5],
+  ["VILA MEDEIROS",33,25,29,41,6],
+  ["SAUDE",30,20,28,52,4],
+  ["PARQUE NOVO MUNDO",32,21,29,46,6],
+  ["CHÁCARA INGLESA",21,22,31,57,3],
+  ["VILA GUMERCINDO",28,26,29,45,4],
+  ["VILA CONSTANÇA",31,23,27,48,3],
+  ["VILA GUSTAVO",29,26,28,44,4],
+  ["VILA DOM PEDRO I",30,27,25,44,4],
+  ["VILA ANGLO BRASILEIRA",32,20,22,49,4],
+  ["PARADA INGLESA",37,20,22,41,6],
+  ["VILA RÉ",18,23,45,36,2],
+  ["HIGIENOPOLIS",37,27,26,30,3],
+  ["BOSQUE DA SAÚDE",26,20,28,46,3],
+  ["BELÉM",41,24,25,31,2],
+  ["SACOMÃ",22,26,24,45,4],
+  ["SUMARE",27,19,23,51,0],
+  ["VILA OLÍMPIA",29,16,15,58,1],
+  ["SANTA IFIGÊNIA",31,23,28,35,2],
+  ["SANTA TERESINHA",22,30,26,35,5],
+  ["CIDADE MONCOES",28,22,21,40,7],
+  ["VL MARIANA",34,13,20,44,6],
+  ["VILA INDEPENDENCIA",26,22,30,34,5],
+  ["VILA SANTA CATARINA",24,21,23,46,2],
+  ["VILA POMPÉIA",20,24,30,35,6],
+  ["VILA NOVA CONCEIÇÃO",27,18,24,46,0],
+  ["PARQUE SÃO JORGE",24,25,28,34,3],
+  ["CIDADE LÍDER",31,21,39,21,2],
+  ["CENTRO HISTORICO DE SAO PAULO",38,21,26,29,0],
+  ["FREGUESIA DO O",19,24,19,46,5],
+  ["SOCORRO",21,14,27,41,8],
+  ["VILA DOM PEDRO II",32,23,16,35,4],
+  ["CONJUNTO RESIDENCIAL JOSÉ BONIFÁCIO",36,15,24,33,2],
+  ["VILA MADALENA",20,20,19,47,3],
+  ["FREGUESIA DO Ó",17,18,22,47,5],
+  ["VILA MASCOTE",21,25,23,34,4],
+  ["VILA SUZANA",27,20,24,31,4],
+  ["VÁRZEA DA BARRA FUNDA",16,22,26,32,7],
+  ["PENHA DE FRANCA",27,15,32,25,4],
+  ["VILA MAZZEI",29,20,19,30,4],
+  ["VILA GUARANI",28,18,27,26,3],
+  ["JARDIM DA GLÓRIA",20,20,18,39,5],
+  ["VILA ARICANDUVA",24,22,18,33,4],
+  ["STO AMARO",27,15,26,31,2],
+  ["PARQUE PERUCHE",18,25,15,40,3],
+  ["VILA PALMEIRAS",23,19,16,35,7],
+  ["JAGUARÉ",25,16,16,39,4],
+  ["VILA ZILDA",21,23,19,31,4],
+  ["VILA ALPINA",32,23,28,13,2],
+  ["VILA PAIVA",32,19,17,25,4],
+  ["QUARTA PARADA",22,24,21,28,2],
+  ["CHÁCARA SANTO ANTÔNIO",26,17,18,31,5],
+  ["VILA OLIMPIA",26,14,14,41,1],
+  ["JARDIM JAPAO",24,23,16,31,2],
+  ["VL ANDRADE",20,15,14,42,4],
+  ["VILA PIRITUBA",12,18,18,43,3],
+  ["PLANALTO PAULISTA",28,12,18,33,3],
+  ["JARDIM BRASIL",16,23,20,32,3],
+  ["PARQUE VITÓRIA",19,21,21,30,2],
+  ["JARDIM DAS ACACIAS",20,21,17,33,2],
+  ["VILA NOVA MAZZEI",25,17,18,29,3],
+  ["VILA NOVA CACHOEIRINHA",18,18,19,35,2],
+  ["VILA ISOLINA MAZZEI",22,21,14,30,5],
+  ["JARDIM PRUDÊNCIA",20,14,17,39,2],
+  ["JARDIM JAPÃO",19,20,18,32,3],
+  ["JARDIM ANÁLIA FRANCO",23,18,20,27,4],
+  ["PARQUE DA MOOCA",21,17,21,30,2],
+  ["PARQUE BOTURUSSU",23,18,17,30,3],
+  ["LUZ",24,18,13,34,2],
+  ["VILA UBERABINHA",28,10,20,27,3],
+  ["VILA SOFIA",26,10,18,32,2],
+  ["JARDIM SÃO PAULO",21,19,18,27,3],
+  ["VILA AZEVEDO",20,21,17,25,3],
+  ["JARDIM DAS VERTENTES",19,21,18,25,3],
+  ["CARANDIRU",21,15,15,32,3],
+  ["ÁGUA RASA",20,17,30,18,0],
+  ["VILA NIVI",23,16,14,27,4],
+  ["CIDADE ADEMAR",20,11,14,38,0],
+  ["JARDIM MONTE KEMEL",17,8,25,25,7],
+  ["CIDADE MÃE DO CÉU",17,15,19,29,2],
+  ["PARQUE BRISTOL",23,14,15,28,1],
+  ["ALTO DA LAPA",15,7,17,36,6],
+  ["PARQUE EDU CHAVES",20,17,15,25,3],
+  ["VILA IPOJUCA",15,11,15,33,4],
+  ["MANDAQUI",20,15,19,20,4],
+  ["JARDIM AVELINO",16,14,22,24,2],
+  ["BROOKLIN NOVO",22,20,12,22,2],
+  ["VILA NAIR",18,14,12,30,3],
+  ["VILA ESPERANÇA",29,19,16,11,2],
+  ["JARDIM AMÉRICA",11,10,19,31,6],
+  ["VILA INDEPENDÊNCIA",19,15,21,19,2],
+  ["VILA ANASTÁCIO",16,18,13,23,6],
+  ["CATUMBI",23,16,14,21,2],
+  ["BUTANTA",15,16,17,22,6],
+  ["JARDIM IRIS",8,16,15,32,4],
+  ["CHÁCARA CALIFÓRNIA",16,16,22,18,0],
+  ["VILA NOVA MANCHESTER",13,14,16,26,2],
+  ["VILA EDE",19,13,13,23,3],
+  ["VILA LEONOR",18,15,11,24,2],
+  ["JARDIM MODELO",16,18,11,23,2],
+  ["BRASILÂNDIA",13,17,12,25,3],
+  ["VILA IVONE",22,17,14,15,1],
+  ["CIDADE ANTÔNIO ESTEVÃO DE CARVALHO",17,9,19,24,0],
+  ["JARDIM CARAVELAS",16,8,21,22,1],
+  ["JARDIM HELENA",17,8,20,19,3],
+  ["CANINDÉ",20,15,7,22,3],
+  ["VILA ZELINA",17,12,12,23,2],
+  ["MARANHÃO",12,16,12,24,2],
+  ["JARDIM INDEPENDÊNCIA",19,9,25,10,3],
+  ["JARDIM ANDARAÍ",15,14,11,23,3],
+  ["TREMEMBÉ",15,13,11,23,3],
+  ["PARQUE INDUSTRIAL TOMAS EDSON",15,13,17,17,3],
+  ["MIRANDÓPOLIS",15,11,16,21,2],
+  ["JARDIM NOSSA SENHORA DO CARMO",17,11,16,20,1],
+  ["GUAIAUNA",14,17,11,21,2],
+  ["ALTO DO PARI",19,14,10,20,2],
+  ["ALTO DE PINHEIROS",11,8,13,31,1],
+  ["VILA SÔNIA",9,12,16,21,5],
+  ["VILA ISA",16,7,9,29,2],
+  ["VILA BARBOSA",12,14,12,22,3],
+  ["PARI",15,15,9,22,2],
+  ["JARDIM TAQUARAL",10,12,14,26,1],
+  ["GUAIAÚNA",12,17,11,21,2],
+  ["CHACARA SANTO ANTONIO",14,8,17,23,1],
+  ["VILA NOVA",11,13,10,25,3],
+  ["VILA BELA",15,16,22,8,1],
+  ["SÍTIO DO MORRO",10,13,13,24,2],
+  ["REAL PARQUE",15,7,16,22,2],
+  ["JARDIM SAO SAVERIO",18,13,11,20,0],
+  ["JARDIM SAPOPEMBA",17,9,20,15,0],
+  ["JARDIM PARAISO",13,14,9,22,3],
+  ["PARQUE SAO DOMINGOS",8,10,8,31,2],
+  ["JARDIM SÃO SAVÉRIO",17,13,11,18,0],
+  ["JARDIM INDEPENDENCIA",19,10,18,11,1],
+  ["VILA MORAES",17,9,13,16,3],
+  ["VILA LONDRINA",9,14,11,22,2],
+  ["PARQUE MUNHOZ",14,11,22,10,1],
+  ["JARDIM CIDADE PIRITUBA",16,5,14,18,5],
+  ["CIDADE PATRIARCA",19,16,15,6,2],
+  ["VILA GERMINAL",12,12,7,23,3],
+  ["VILA CRUZEIRO",12,14,15,16,0],
+  ["JARDIM MARISTELA",10,14,10,20,3],
+  ["VILA IRMÃOS ARNONI",10,10,10,24,2],
+  ["PIRITUBA",6,10,19,21,0],
+  ["JAGUARE",13,9,10,23,1],
+  ["VILA SANTANA",8,10,10,24,3],
+  ["VILA NOVA SAVOIA",10,13,10,20,2],
+  ["VILA ALBERTINA",13,10,10,20,2],
+  ["JARDIM PAULISTANO",11,9,11,21,3],
+  ["JARDIM GUANCA",12,11,8,22,2],
+  ["PARAÍSO DO MORUMBI",11,11,8,22,2],
+  ["JARDIM DO COLÉGIO",10,11,8,23,2],
+  ["JARDIM DAS LARANJEIRAS",11,10,18,14,1],
+  ["VILA VITÓRIO MAZZEI",12,11,8,20,2],
+  ["VILA DAS MERCÊS",10,10,14,17,2],
+  ["VILA CORDEIRO",12,7,9,20,5],
+  ["CHÁCARA TATUAPÉ",11,12,7,21,2],
+  ["JARDIM VILA MARIANA",10,6,19,15,2],
+  ["JARDIM SAO PAULO",10,14,10,17,1],
+  ["JARDIM CAMPO GRANDE",14,9,8,20,1],
+  ["HORTO FLORESTAL",8,10,10,22,2],
+  ["FAZENDA DA JUTA",12,12,15,11,2],
+  ["PARQUE SAO JORGE",12,11,16,12,0],
+  ["PARQUE JABAQUARA",8,9,6,25,3],
+  ["JARDIM UMUARAMA",9,11,9,22,0],
+  ["JARDIM FELICIDADE",8,11,7,22,3],
+  ["JARDIM CELESTE",12,14,6,15,4],
+  ["AMERICANÓPOLIS",13,6,14,17,1],
+  ["VILA PAULISTANA",9,11,8,20,2],
+  ["VILA NOVA CURUÇÁ",15,6,12,16,1],
+  ["VILA MANGALOT",8,10,7,22,3],
+  ["SACOMA",15,10,13,11,1],
+  ["JARDIM DA GLORIA",9,8,12,19,2],
+  ["VILA SANTA CLARA",11,9,15,13,1],
+  ["VILA PENTEADO",9,5,19,14,2],
+  ["VILA FIRMIANO PINTO",14,5,11,16,3],
+  ["VILA BUENOS AIRES",15,8,15,11,0],
+  ["PARQUE DA VILA PRUDENTE",13,11,11,13,1],
+  ["PARAISÓPOLIS",15,7,7,19,1],
+  ["VILA HERMÍNIA",9,11,7,19,2],
+  ["SÃO LUCAS",15,10,14,8,1],
+  ["RIO PEQUENO",10,9,11,15,3],
+  ["JURUBATUBA",11,9,11,15,2],
+  ["JARDIM ORIENTAL",9,11,9,17,2],
+  ["PARQUE REBOUCAS",6,6,7,15,0],
+  ["PARQUE NAÇÕES UNIDAS",8,5,10,10,1],
+  ["JARDIM ANALIA FRANCO",17,6,10,12,2],
+  ["VILA SONIA",7,10,13,11,5],
+  ["JARDIM PERI",5,7,18,15,1],
+  ["JARDIM EUROPAA",5,8,14,16,2],
+  ["VILA ANASTACIO",14,17,12,25,6],
+  ["VILA LAÍS",11,18,11,30,3],
+  ["JARDIM ANHANGUERA",12,14,13,33,1],
+  ["JARDIM CARAVELAS",16,8,21,22,1],
+  ["JARDIM SANTA EMÍLIA",12,11,13,10,1],
+  ["JARDIM PENHA",4,4,3,5,0],
+  ["LAPA DE BAIXO",7,4,5,13,1],
+  ["PARQUE TOMAS SARAIVA",10,6,8,7,0],
+  ["JARDIM JABAQUARA",6,5,6,13,1],
+  ["VILA TAQUARI",5,2,7,2,1],
+  ["ARTUR ALVIM",5,4,3,3,0],
+  ["LAJEADO",12,6,8,9,1],
+  ["JARDIM ANÁLIA FRANCO",23,18,20,27,4],
+  ["VILA GRECO",4,3,5,8,1],
+  ["CIDADE SÃO MATEUS",14,4,8,9,1],
+  ["JARDIM ITAQUERA",3,2,4,6,1],
+  ["ERMELINO MATARAZZO",1,0,3,2,0],
+  ["CONJUNTO HABITACIONAL INÁCIO MONTEIRO",5,6,5,7,2],
+  ["PARQUE SÃO LUCAS",3,2,5,4,0],
+  ["CANGAÍBA",11,5,10,8,1],
+  ["VILA NOVA CACHOEIRINHA",18,18,19,35,2],
+  ["GUAIANAZES",13,5,6,9,4],
+  ["CIDADE TIRADENTES",9,7,10,6,2],
+  ["JARDIM ROBINSON",2,1,3,4,0],
+  ["JARDIM SÃO FRANCISCO",6,0,3,1,0],
+  ["JARDIM PIQUEROBY",3,10,11,6,0],
+  ["CURSINO",10,6,9,17,2],
+  ["SAÚDE",36,33,35,68,4],
+  ["CIDADE SÃO FRANCISCO",8,6,2,15,3],
+  ["JARDIM DAS PERDIZES",3,4,5,12,3],
+  ["PACAEMBU",11,8,16,10,2],
+  ["JARDIM BOA VISTA",7,5,2,12,1],
+  ["PERDIZES",110,87,126,181,11],
+  ["JABAQUARA",31,28,33,60,6]
+];
+
+const bairros = {};
+RAW_LAPA.forEach(r => {
+  const n = r[0].toUpperCase().trim();
+  if (!bairros[n]) bairros[n] = [0,0,0,0,0];
+  for (let i=0;i<5;i++) bairros[n][i] += (r[i+1]||0);
+});
+const listaLapa = Object.entries(bairros).map(([nome,meses]) => ({nome,meses,total:meses.reduce((a,b)=>a+b,0)})).sort((a,b)=>b.total-a.total);
+const grandTotalLapa = listaLapa.reduce((a,b)=>a+b.total,0);
+const MESES = ["Jan","Fev","Mar","Abr","Mai"];
+const CORES = ["#1A6BFA","#1D9E75","#D85A30","#7F77DD","#BA7517","#185FA5","#0F6E56","#993C1D","#3C3489","#633806"];
+
+function getVal(item,mes){return mes==='total'?item.total:(item.meses[parseInt(mes)]||0);}
+
+const MESES_LABEL = {total:'Jan–Mai 2026', 0:'Janeiro 2026', 1:'Fevereiro 2026', 2:'Março 2026', 3:'Abril 2026', 4:'Maio 2026'};
+
+function renderKPIsLapa(mesIdx){
+  const filtered = listaLapa.filter(x=>getVal(x,mesIdx)>0);
+  const vol = filtered.reduce((a,b)=>a+getVal(b,mesIdx),0);
+  const top1 = filtered.sort((a,b)=>getVal(b,mesIdx)-getVal(a,mesIdx))[0];
+  const top10vol = filtered.slice(0,10).reduce((a,b)=>a+getVal(b,mesIdx),0);
+  const periodo = MESES_LABEL[mesIdx] || 'Jan–Mai 2026';
+  document.getElementById('kpis-lapa').innerHTML=`
+    <div class="kpi"><div class="kpi-label">Total pedidos</div><div class="kpi-value">${vol.toLocaleString('pt-BR')}</div><div class="kpi-sub">${periodo}</div></div>
+    <div class="kpi"><div class="kpi-label">Bairros atendidos</div><div class="kpi-value">${filtered.length}</div><div class="kpi-sub">com pelo menos 1 pedido</div></div>
+    <div class="kpi"><div class="kpi-label">Bairro líder</div><div class="kpi-value" style="font-size:15px;">${top1.nome}</div><div class="kpi-sub">${getVal(top1,mesIdx).toLocaleString('pt-BR')} pedidos · ${periodo}</div></div>
+    <div class="kpi"><div class="kpi-label">Concentração top 10</div><div class="kpi-value">${(top10vol/vol*100).toFixed(1)}%</div><div class="kpi-sub">do volume total</div></div>
+  `;
+}
+
+function renderTabelaLapa(mesIdx,topN,busca){
+  let src = listaLapa.slice().sort((a,b)=>getVal(b,mesIdx)-getVal(a,mesIdx));
+  if(busca) src=src.filter(x=>x.nome.includes(busca.toUpperCase()));
+  const total=src.reduce((a,b)=>a+getVal(b,mesIdx),0)||1;
+  const maxVal=getVal(src[0],mesIdx)||1;
+  const rows=busca?src:src.slice(0,50);
+  document.getElementById('tbody-lapa').innerHTML=rows.map((item,i)=>{
+    const val=getVal(item,mesIdx);
+    if(!val) return '';
+    const share=(val/total*100).toFixed(1);
+    const barW=Math.round(val/maxVal*100);
+    const pct=val/maxVal;
+    const color=pct>0.7?'#EF4444':pct>0.4?'#F59E0B':pct>0.15?'#4338CA':'#22C55E';
+    let trend='';
+    if(mesIdx!=='total'&&parseInt(mesIdx)>0){
+      const prev=item.meses[parseInt(mesIdx)-1]||0;
+      const diff=val-prev;
+      if(diff>0) trend=`<span style="font-size:9px;color:#15803D;font-weight:700;">▲${diff}</span>`;
+      else if(diff<0) trend=`<span style="font-size:9px;color:#B91C1C;font-weight:700;">▼${Math.abs(diff)}</span>`;
+    }
+    return `<div style="padding:5px 6px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="flyToBairro('${item.nome}')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-size:10px;font-weight:700;color:var(--text-tertiary);width:16px;">${i+1}</span>
+          <span style="font-size:11px;font-weight:600;color:var(--text-primary);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.nome}">${item.nome}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          ${trend}
+          <span style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${color};">${val.toLocaleString('pt-BR')}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <div style="flex:1;height:4px;background:#F0F0F0;border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${barW}%;background:${color};border-radius:2px;"></div>
+        </div>
+        <span style="font-size:9px;color:var(--text-tertiary);width:28px;text-align:right;">${share}%</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Atualizar marcadores no mapa se já iniciado
+  if(leafCalor) atualizarMarcadores(mesIdx);
+}
+
+let lineChart=null, donutChart=null;
+function renderLineLapa(){
+  const top5=listaLapa.slice(0,5);
+  document.getElementById('leg5').innerHTML=top5.map((b,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${CORES[i]};"></span>${b.nome}</span>`).join('');
+  if(lineChart) lineChart.destroy();
+  lineChart=new Chart(document.getElementById('chart-line'),{
+    type:'line',
+    data:{labels:MESES,datasets:top5.map((b,i)=>({label:b.nome,data:b.meses,borderColor:CORES[i],backgroundColor:CORES[i],borderWidth:2,pointRadius:4,tension:0.3,borderDash:[[],[4,2],[2,2],[6,2],[4,4]][i]}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:false,font:{family:'DM Sans',size:12}}},y:{beginAtZero:true,ticks:{font:{family:'DM Mono',size:11},callback:v=>v.toLocaleString('pt-BR')}}}}
+  });
+}
+
+function renderDonutLapa(){
+  const top10=listaLapa.slice(0,10);
+  const top10t=top10.reduce((a,b)=>a+b.total,0);
+  const outros=grandTotalLapa-top10t;
+  const labels=[...top10.map(b=>b.nome),'Demais'];
+  const data=[...top10.map(b=>b.total),outros];
+  const bgc=[...CORES.slice(0,10),'#D3D1C7'];
+  if(donutChart) donutChart.destroy();
+  donutChart=new Chart(document.getElementById('chart-donut'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:bgc,borderWidth:1,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw.toLocaleString('pt-BR')} (${(ctx.raw/grandTotalLapa*100).toFixed(1)}%)`}}}}
+  });
+  document.getElementById('donut-legend').innerHTML=labels.slice(0,6).map((l,i)=>
+    `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+      <span style="width:9px;height:9px;border-radius:2px;background:${bgc[i]};flex-shrink:0;"></span>
+      <span style="color:var(--text-secondary);font-size:11px;overflow:hidden;text-overflow:ellipsis;max-width:150px;">${l}</span>
+      <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;">${data[i].toLocaleString('pt-BR')}</span>
+    </div>`
+  ).join('');
+}
+
+function updateLapa(){
+  const selMes = document.getElementById('sel-mes');
+  const buscaEl = document.getElementById('busca');
+  const mes = selMes ? selMes.value : 'total';
+  const busca = buscaEl ? buscaEl.value.trim() : '';
+  renderKPIsLapa(mes);
+  renderRaioCards(mes);
+  renderTabelaLapa(mes,50,busca);
+  if(leafCalor) atualizarMarcadores(mes);
+}
+
+document.getElementById('sel-mes').addEventListener('change', updateLapa);
+document.getElementById('busca').addEventListener('input', updateLapa);
+
+/* ===== ABA 3: MAPA ===== */
+const HUB_LAT = -23.4965, HUB_LNG = -46.8481;
+const MAP_LOJAS = [
+  {nome:"AIRI (Tatuapé)",          km:32,  pedidos:19342, lat:-23.5427, lng:-46.5740},
+  {nome:"BZLM (Braz Leme/Santana)", km:50,  pedidos:12921, lat:-23.4780, lng:-46.6289},
+  {nome:"CDJD (Cidade Jardim)",    km:22,  pedidos:5513,  lat:-23.5864, lng:-46.6916},
+  {nome:"JUTI (Butantã)",          km:26,  pedidos:5326,  lat:-23.5678, lng:-46.7280},
+  {nome:"OSFR (Osasco/Frei)",      km:24,  pedidos:4872,  lat:-23.5237, lng:-46.7919},
+  {nome:"Chácara Klabin",          km:31,  pedidos:5998,  lat:-23.5991, lng:-46.6340},
+  {nome:"Osasco",                  km:9,   pedidos:4152,  lat:-23.5329, lng:-46.7919},
+  {nome:"PORT (Portão)",           km:24,  pedidos:12789, lat:-23.5560, lng:-46.7860},
+  {nome:"SCTS (Santos Dumont)",    km:27,  pedidos:8733,  lat:-23.5270, lng:-46.6580},
+  {nome:"TOIA (Ibirapuera)",       km:83,  pedidos:6232,  lat:-23.5960, lng:-46.6580},
+  {nome:"WLUI (W. Luís)",          km:7,   pedidos:6032,  lat:-23.5260, lng:-46.7980},
+  {nome:"Higienópolis",            km:19,  pedidos:2379,  lat:-23.5396, lng:-46.6523},
+  {nome:"Morumbi",                 km:28,  pedidos:2273,  lat:-23.6140, lng:-46.7230},
+  {nome:"Ribeirão Preto",          km:0,   pedidos:3165,  lat:-21.1775, lng:-47.8103},
+  {nome:"Santos Ponta da Praia",   km:105, pedidos:2891,  lat:-23.9719, lng:-46.3167},
+  {nome:"Sorocaba",                km:0,   pedidos:1817,  lat:-23.5015, lng:-47.4526},
+  {nome:"Vila Madalena",           km:0,   pedidos:2663,  lat:-23.5569, lng:-46.6897},
+];
+
+function mcor(km){
+  if(!km) return {fill:'#888780',border:'#5F5E5A',cls:'badgem-c',lbl:'s/ dado'};
+  if(km<=30) return {fill:'#1D9E75',border:'#0F6E56',cls:'badgem-v',lbl:'≤ 30 km'};
+  if(km<=80) return {fill:'#BA7517',border:'#854F0B',cls:'badgem-a',lbl:'≤ 80 km'};
+  return {fill:'#C0392B',border:'#A32D2D',cls:'badgem-r',lbl:'> 80 km'};
+}
+
+let mapaInit = false;
+let leafMap = null;
+const leafMarkers = [];
+
+function initMapa(){
+  if(mapaInit) return;
+  mapaInit = true;
+
+  const comKm = MAP_LOJAS.filter(l=>l.km>0);
+  const media = Math.round(comKm.reduce((a,b)=>a+b.km,0)/comKm.length);
+  const maxKm = Math.max(...comKm.map(l=>l.km));
+  const perto = comKm.filter(l=>l.km<=30).length;
+
+  document.getElementById('m-total').innerText = MAP_LOJAS.length;
+  document.getElementById('m-media').innerText = media+' km';
+  document.getElementById('m-perto').innerText = perto;
+  document.getElementById('m-max').innerText = maxKm+' km';
+
+  leafMap = L.map('map-barueri',{zoomControl:true}).setView([HUB_LAT, HUB_LNG], 9);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(leafMap);
+
+  const hubIco = L.divIcon({html:`<div style="width:20px;height:20px;background:#1A6BFA;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #1A6BFA;"></div>`,iconSize:[20,20],iconAnchor:[10,10],className:''});
+  L.marker([HUB_LAT,HUB_LNG],{icon:hubIco,zIndexOffset:1000}).addTo(leafMap)
+    .bindPopup('<div class="popup-nome">Hub Barueri (Alphaville)</div><div style="font-size:12px;color:#666;">Ponto central de distribuição</div>');
+
+  [20,50,100].forEach(r=>{
+    const c = r<=20?'#1D9E75':r<=50?'#BA7517':'#C0392B';
+    L.circle([HUB_LAT,HUB_LNG],{radius:r*1000,color:c,weight:1,opacity:0.4,fillOpacity:0.04,fillColor:c,dashArray:'6,4'}).addTo(leafMap).bindTooltip(r+' km',{permanent:false,direction:'top'});
+  });
+
+  MAP_LOJAS.forEach((loja,i)=>{
+    const c=mcor(loja.km);
+    const r=Math.max(8,Math.min(18,6+Math.sqrt(loja.pedidos/800)));
+    const ico=L.divIcon({html:`<div style="width:${r*2}px;height:${r*2}px;background:${c.fill};border:2.5px solid ${c.border};border-radius:50%;cursor:pointer;"></div>`,iconSize:[r*2,r*2],iconAnchor:[r,r],className:''});
+    const mk=L.marker([loja.lat,loja.lng],{icon:ico}).addTo(leafMap).bindPopup(`<div class="popup-nome">${loja.nome}</div><div class="popup-row"><span>Hub Barueri →</span><span>${loja.km?loja.km+' km':'N/D'}</span></div><div class="popup-row"><span>Pedidos (Jan–Mai)</span><span>${loja.pedidos.toLocaleString('pt-BR')}</span></div>`);
+    if(loja.km>0) L.polyline([[HUB_LAT,HUB_LNG],[loja.lat,loja.lng]],{color:c.fill,weight:1.5,opacity:0.3,dashArray:'4,4'}).addTo(leafMap);
+    leafMarkers.push(mk);
+  });
+
+  const sorted=[...MAP_LOJAS].filter(l=>l.km>0).sort((a,b)=>a.km-b.km);
+  document.getElementById('lista-mapa').innerHTML=sorted.map(l=>{
+    const i=MAP_LOJAS.indexOf(l);
+    const c=mcor(l.km);
+    return `<div class="loja-card-map" id="mcard-${i}" onclick="flyToLoja(${i})">
+      <div class="loja-nome-map">${l.nome}</div>
+      <div class="loja-meta-map">
+        <span class="loja-km-map">${l.km} km</span>
+        <span class="badgem ${c.cls}">${c.lbl}</span>
+        <span style="margin-left:auto;font-size:10px;color:var(--text-tertiary);">${l.pedidos.toLocaleString('pt-BR')} ped.</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function flyToLoja(i){
+  const l=MAP_LOJAS[i];
+  leafMap.flyTo([l.lat,l.lng],13,{duration:1});
+  leafMarkers[i].openPopup();
+  document.querySelectorAll('.loja-card-map').forEach(c=>c.classList.remove('active'));
+  document.getElementById('mcard-'+i)?.classList.add('active');
+}
+
+const origSwitch = switchTab;
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab==='mapa') setTimeout(()=>{initMapa();if(leafMap)leafMap.invalidateSize();},100);
+}
+
+
+/* ===== ABA ABASTECIMENTO ===== */
+let rowsLapa = [
+  {sem:'S1', veic:15, km:130, custo:4.50, pallets:390, freq:3, transit:'02:10'},
+  {sem:'S2', veic:15, km:130, custo:4.50, pallets:390, freq:3, transit:'02:10'},
+  {sem:'S3', veic:15, km:130, custo:4.50, pallets:390, freq:3, transit:'02:10'},
+  {sem:'S4', veic:15, km:130, custo:4.50, pallets:390, freq:3, transit:'02:10'},
+];
+let rowsBar = [
+  {sem:'S1', veic:10, km:130, custo:4.50, pallets:390, freq:5, transit:'00:30'},
+  {sem:'S2', veic:10, km:130, custo:4.50, pallets:390, freq:5, transit:'00:30'},
+  {sem:'S3', veic:10, km:130, custo:4.50, pallets:390, freq:5, transit:'00:30'},
+  {sem:'S4', veic:10, km:130, custo:4.50, pallets:390, freq:5, transit:'00:30'},
+];
+
+function custRow(r){ return r.veic * r.km * r.custo; }
+function fmtBRL(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
+
+function renderRows(tipo){
+  const rows = tipo==='lapa' ? rowsLapa : rowsBar;
+  const el = document.getElementById('rows-'+tipo);
+  el.innerHTML = rows.map((r,i) => `
+    <div class="semana-row" data-tipo="${tipo}" data-idx="${i}">
+      <input value="${r.sem}" data-f="sem" style="text-align:left;font-family:'DM Sans',monospace;font-weight:500;">
+      <input type="number" value="${r.veic}" data-f="veic" min="0">
+      <input type="number" value="${r.km}"   data-f="km"   min="0">
+      <input type="number" value="${r.custo}" data-f="custo" step="0.10" min="0">
+      <input type="number" value="${r.pallets}" data-f="pallets" min="0">
+      <input type="number" value="${r.freq}"  data-f="freq" min="0">
+      <input value="${r.transit}" data-f="transit" style="text-align:center;">
+      <div class="custo-total">${fmtBRL(custRow(r))}</div>
+      <button class="del-btn" onclick="delRow('${tipo}',${i})">✕</button>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const row = inp.closest('.semana-row');
+      const t = row.dataset.tipo;
+      const i = parseInt(row.dataset.idx);
+      const f = inp.dataset.f;
+      const arr = t==='lapa' ? rowsLapa : rowsBar;
+      if(f==='sem'||f==='transit') arr[i][f] = inp.value;
+      else arr[i][f] = parseFloat(inp.value)||0;
+      row.querySelector('.custo-total').innerText = fmtBRL(custRow(arr[i]));
+      updateResumo();
+      renderChart();
+    });
+  });
+
+  const tot = rows.reduce((a,r)=>a+custRow(r),0);
+  document.getElementById('total-'+tipo).innerText = fmtBRL(tot);
+}
+
+function addRow(tipo){
+  const arr = tipo==='lapa' ? rowsLapa : rowsBar;
+  const n = arr.length+1;
+  const gl_km = parseFloat(document.getElementById(tipo==='lapa'?'glob-km-lapa':'glob-km-bar').value)||130;
+  const gl_c  = parseFloat(document.getElementById(tipo==='lapa'?'glob-custo-lapa':'glob-custo-bar').value)||4.50;
+  arr.push({sem:'S'+n, veic:15, km:gl_km, custo:gl_c, pallets:390, freq:3, transit:'02:10'});
+  renderRows(tipo);
+  updateResumo();
+  renderChart();
+}
+
+function delRow(tipo, idx){
+  const arr = tipo==='lapa' ? rowsLapa : rowsBar;
+  if(arr.length<=1) return;
+  arr.splice(idx,1);
+  renderRows(tipo);
+  updateResumo();
+  renderChart();
+}
+
+function updateResumo(){
+  const totL = rowsLapa.reduce((a,r)=>a+custRow(r),0);
+  const totB = rowsBar.reduce((a,r)=>a+custRow(r),0);
+  const eco  = totL - totB;
+  const pct  = totL>0 ? (eco/totL*100) : 0;
+  const vL   = rowsLapa.reduce((a,r)=>a+r.veic,0);
+  const vB   = rowsBar.reduce((a,r)=>a+r.veic,0);
+  document.getElementById('res-cards').innerHTML = `
+    <div class="r-card"><div class="r-label">Custo total — Lapa</div><div class="r-value">${fmtBRL(totL)}</div><div class="r-sub">${rowsLapa.length} semanas</div></div>
+    <div class="r-card"><div class="r-label">Custo total — Barueri</div><div class="r-value">${fmtBRL(totB)}</div><div class="r-sub">${rowsBar.length} semanas</div></div>
+    <div class="r-card green"><div class="r-label">Economia estimada</div><div class="r-value green">${fmtBRL(eco)}</div><div class="r-sub">${pct.toFixed(1)}% de redução</div></div>
+    <div class="r-card"><div class="r-label">Viagens — Lapa</div><div class="r-value">${vL}</div><div class="r-sub">total no período</div></div>
+    <div class="r-card"><div class="r-label">Viagens — Barueri</div><div class="r-value">${vB}</div><div class="r-sub">total no período</div></div>
+    <div class="r-card green"><div class="r-label">Viagens reduzidas</div><div class="r-value green">${vL-vB}</div><div class="r-sub">expedições a menos</div></div>
+  `;
+  document.getElementById('total-lapa').innerText = fmtBRL(totL);
+  document.getElementById('total-bar').innerText  = fmtBRL(totB);
+}
+
+let chartCalc = null;
+function renderChart(){
+  const labels = rowsLapa.map(r=>r.sem);
+  const dataL  = rowsLapa.map(r=>Math.round(custRow(r)));
+  const dataB  = rowsBar.map(r=>Math.round(custRow(r)));
+  if(chartCalc) chartCalc.destroy();
+  chartCalc = new Chart(document.getElementById('chart-calc'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Via Lapa',   data:dataL, backgroundColor:'#378ADD', borderRadius:4, barPercentage:0.4},
+        {label:'Via Barueri',data:dataB, backgroundColor:'#1D9E75', borderRadius:4, barPercentage:0.4}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${fmtBRL(ctx.raw)}`}}},
+      scales:{
+        x:{ticks:{autoSkip:false, font:{family:'DM Sans',size:12}}},
+        y:{beginAtZero:true, ticks:{font:{family:'DM Mono',size:11}, callback:v=>'R$ '+Math.round(v/1000)+'k'}}
+      }
+    }
+  });
+}
+
+['glob-custo-lapa','glob-custo-bar','glob-km-lapa','glob-km-bar'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input', ()=>{
+    const gl_cl = parseFloat(document.getElementById('glob-custo-lapa').value)||4.50;
+    const gl_cb = parseFloat(document.getElementById('glob-custo-bar').value)||4.50;
+    const gl_kl = parseFloat(document.getElementById('glob-km-lapa').value)||130;
+    const gl_kb = parseFloat(document.getElementById('glob-km-bar').value)||130;
+    rowsLapa.forEach(r=>{r.custo=gl_cl; r.km=gl_kl;});
+    rowsBar.forEach(r=>{r.custo=gl_cb; r.km=gl_kb;});
+    renderRows('lapa'); renderRows('bar');
+    updateResumo(); renderChart();
+  });
+});
+
+
+/* ===== ABA VELOCIDADE ===== */
+const VEL_LOJAS = [
+  {nome:"AIRI (Tatuapé)",       kmLapa:164, kmBar:32,  freqAtual:3, freqBar:5, pedidos:19342},
+  {nome:"BZLM (Braz Leme)",     kmLapa:137, kmBar:50,  freqAtual:3, freqBar:5, pedidos:12921},
+  {nome:"CDJD (Cidade Jardim)", kmLapa:142, kmBar:22,  freqAtual:3, freqBar:5, pedidos:5513},
+  {nome:"JUTI (Butantã)",       kmLapa:140, kmBar:26,  freqAtual:3, freqBar:5, pedidos:5326},
+  {nome:"OSFR",                 kmLapa:154, kmBar:24,  freqAtual:3, freqBar:5, pedidos:4872},
+  {nome:"Chácara Klabin",       kmLapa:161, kmBar:31,  freqAtual:3, freqBar:5, pedidos:5998},
+  {nome:"Osasco",               kmLapa:143, kmBar:9,   freqAtual:3, freqBar:6, pedidos:4152},
+  {nome:"PORT",                 kmLapa:137, kmBar:24,  freqAtual:3, freqBar:5, pedidos:12789},
+  {nome:"SCTS",                 kmLapa:145, kmBar:27,  freqAtual:3, freqBar:5, pedidos:8733},
+  {nome:"TOIA (Ibirapuera)",    kmLapa:213, kmBar:83,  freqAtual:2, freqBar:4, pedidos:6232},
+  {nome:"WLUI",                 kmLapa:137, kmBar:7,   freqAtual:3, freqBar:6, pedidos:6032},
+  {nome:"Higienópolis",         kmLapa:149, kmBar:19,  freqAtual:3, freqBar:5, pedidos:2379},
+  {nome:"Morumbi",              kmLapa:130, kmBar:28,  freqAtual:2, freqBar:4, pedidos:2273},
+  {nome:"Santos",               kmLapa:136, kmBar:105, freqAtual:2, freqBar:3, pedidos:2891},
+  {nome:"Vila Madalena",        kmLapa:130, kmBar:20,  freqAtual:3, freqBar:5, pedidos:2663},
+];
+
+// Estimar lead time em horas: tempo de trânsito + janela de corte
+// Velocidade média: 60km/h LH, 40km/h urbano
+function transitoH(km, urban){ return +(km / (urban ? 40 : 60)).toFixed(1); }
+function leadTimeH(km, urban, freq){
+  const transit = transitoH(km, urban);
+  const janelaCorte = 24 / freq; // horas entre janelas
+  return +(transit + janelaCorte).toFixed(1);
+}
+
+function renderVelKPIs(){
+  const avgLtAtual = VEL_LOJAS.reduce((a,l)=>a+leadTimeH(l.kmLapa,false,l.freqAtual),0)/VEL_LOJAS.length;
+  const avgLtBar   = VEL_LOJAS.reduce((a,l)=>a+leadTimeH(l.kmBar,true,l.freqBar),0)/VEL_LOJAS.length;
+  const avgTrAtual = VEL_LOJAS.reduce((a,l)=>a+transitoH(l.kmLapa,false),0)/VEL_LOJAS.length;
+  const avgTrBar   = VEL_LOJAS.reduce((a,l)=>a+transitoH(l.kmBar,true),0)/VEL_LOJAS.length;
+  const avgFrAtual = VEL_LOJAS.reduce((a,l)=>a+l.freqAtual,0)/VEL_LOJAS.length;
+  const avgFrBar   = VEL_LOJAS.reduce((a,l)=>a+l.freqBar,0)/VEL_LOJAS.length;
+  const gainLt = avgLtAtual - avgLtBar;
+
+  document.getElementById('vel-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Lead Time médio atual</div><div class="kpi-value red">${avgLtAtual.toFixed(1)}h</div><div class="kpi-sub">via Hub Lapa</div></div>
+    <div class="kpi"><div class="kpi-label">Lead Time médio proposto</div><div class="kpi-value green">${avgLtBar.toFixed(1)}h</div><div class="kpi-sub">via Hub Barueri</div></div>
+    <div class="kpi"><div class="kpi-label">Ganho médio de lead time</div><div class="kpi-value blue">${gainLt.toFixed(1)}h</div><div class="kpi-sub">${(gainLt/avgLtAtual*100).toFixed(0)}% mais rápido</div></div>
+    <div class="kpi"><div class="kpi-label">Trânsito médio atual</div><div class="kpi-value red">${avgTrAtual.toFixed(1)}h</div><div class="kpi-sub">Itapeva → Loja</div></div>
+    <div class="kpi"><div class="kpi-label">Trânsito médio proposto</div><div class="kpi-value green">${avgTrBar.toFixed(1)}h</div><div class="kpi-sub">Barueri → Loja</div></div>
+    <div class="kpi"><div class="kpi-label">Frequência média</div><div class="kpi-value green">+${(avgFrBar-avgFrAtual).toFixed(1)}x/sem</div><div class="kpi-sub">entregas a mais por semana</div></div>
+  `;
+}
+
+function renderVelTable(){
+  const maxLt = Math.max(...VEL_LOJAS.map(l=>leadTimeH(l.kmLapa,false,l.freqAtual)));
+  document.getElementById('tbody-vel').innerHTML = VEL_LOJAS.map((l,i) => {
+    const trAtual = transitoH(l.kmLapa, false);
+    const trBar   = transitoH(l.kmBar, true);
+    const ltAtual = leadTimeH(l.kmLapa, false, l.freqAtual);
+    const ltBar   = leadTimeH(l.kmBar, true, l.freqBar);
+    const dTr = +(trAtual - trBar).toFixed(1);
+    const dLt = +(ltAtual - ltBar).toFixed(1);
+    const dFr = l.freqBar - l.freqAtual;
+    const barW = Math.round(ltAtual/maxLt*120);
+    const barWB = Math.round(ltBar/maxLt*120);
+
+    return `<tr data-vel-idx="${i}">
+      <td style="font-weight:600;">${l.nome}</td>
+      <td style="text-align:right;color:#B91C1C;font-family:'DM Mono',monospace;" class="v-trAtual" contenteditable="true">${trAtual}h</td>
+      <td style="text-align:right;">
+        <div class="vel-bar-wrap">
+          <div class="vel-bar lapa" style="width:${barW}px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;color:#B91C1C;">${ltAtual}h</span>
+        </div>
+      </td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;" contenteditable="true" class="v-frAtual">${l.freqAtual}x</td>
+      <td style="width:8px;"></td>
+      <td style="text-align:right;color:#15803D;font-family:'DM Mono',monospace;" contenteditable="true" class="v-trBar">${trBar}h</td>
+      <td style="text-align:right;">
+        <div class="vel-bar-wrap">
+          <div class="vel-bar bar" style="width:${barWB}px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;color:#15803D;">${ltBar}h</span>
+        </div>
+      </td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;" contenteditable="true" class="v-frBar">${l.freqBar}x</td>
+      <td class="gain-cell ${dTr>0?'gain-pos':dTr<0?'gain-neg':'gain-zero'}" style="text-align:right;">${dTr>0?'-'+dTr+'h':dTr+'h'}</td>
+      <td class="gain-cell ${dLt>0?'gain-pos':dLt<0?'gain-neg':'gain-zero'}" style="text-align:right;">${dLt>0?'-'+dLt+'h':dLt+'h'}</td>
+      <td class="gain-cell ${dFr>0?'gain-pos':dFr<0?'gain-neg':'gain-zero'}" style="text-align:right;">${dFr>0?'+'+dFr:dFr}x</td>
+    </tr>`;
+  }).join('');
+}
+
+let chartLT=null, chartFQ=null;
+function renderVelCharts(){
+  const labels = VEL_LOJAS.map(l=>l.nome.replace('Loja ','').replace('LOJA PETLOVE - ',''));
+  const ltAtual = VEL_LOJAS.map(l=>leadTimeH(l.kmLapa,false,l.freqAtual));
+  const ltBar   = VEL_LOJAS.map(l=>leadTimeH(l.kmBar,true,l.freqBar));
+  const frAtual = VEL_LOJAS.map(l=>l.freqAtual);
+  const frBar   = VEL_LOJAS.map(l=>l.freqBar);
+
+  if(chartLT) chartLT.destroy();
+  chartLT = new Chart(document.getElementById('chart-lt'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Via Lapa', data:ltAtual, backgroundColor:'rgba(239,68,68,.7)', borderRadius:3, barPercentage:.4},
+      {label:'Via Barueri', data:ltBar, backgroundColor:'rgba(34,197,94,.7)', borderRadius:3, barPercentage:.4}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{position:'top',labels:{font:{family:'Inter',size:11},boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.raw}h`}}},
+      scales:{
+        x:{beginAtZero:true,ticks:{callback:v=>v+'h',font:{family:'DM Mono',size:11}}},
+        y:{ticks:{font:{family:'Inter',size:11}}}
+      }
+    }
+  });
+
+  if(chartFQ) chartFQ.destroy();
+  chartFQ = new Chart(document.getElementById('chart-freq'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Via Lapa', data:frAtual, backgroundColor:'rgba(239,68,68,.7)', borderRadius:3, barPercentage:.4},
+      {label:'Via Barueri', data:frBar, backgroundColor:'rgba(34,197,94,.7)', borderRadius:3, barPercentage:.4}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{position:'top',labels:{font:{family:'Inter',size:11},boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.raw}x/sem`}}},
+      scales:{
+        x:{beginAtZero:true,ticks:{callback:v=>v+'x',font:{family:'DM Mono',size:11}}},
+        y:{ticks:{font:{family:'Inter',size:11}}}
+      }
+    }
+  });
+}
+
+function renderTimeline(){
+  const wrap = document.getElementById('timeline-wrap');
+  // Ciclo típico: corte + trânsito + picking + disponível
+  const modelos = [
+    {nome:'Via Lapa (atual)', color:'#EF4444', segs:[
+      {label:'Corte pedido',pct:15,color:'#FBBF24'},
+      {label:'Expedição MG',pct:10,color:'#F97316'},
+      {label:'Trânsito LH (2.2h)',pct:30,color:'#EF4444'},
+      {label:'Picking Hub',pct:15,color:'#EC4899'},
+      {label:'Entrega loja (1.4h)',pct:20,color:'#8B5CF6'},
+      {label:'Disponível',pct:10,color:'#6B7280'},
+    ]},
+    {nome:'Via Barueri (proposto)', color:'#22C55E', segs:[
+      {label:'Corte pedido',pct:15,color:'#FBBF24'},
+      {label:'Expedição MG',pct:8,color:'#F97316'},
+      {label:'Trânsito LH (2.2h)',pct:20,color:'#F87171'},
+      {label:'Picking Hub',pct:12,color:'#EC4899'},
+      {label:'Entrega loja (0.4h)',pct:8,color:'#34D399'},
+      {label:'Disponível',pct:37,color:'#6B7280'},
+    ]},
+  ];
+
+  const legendSet = {};
+  modelos.forEach(m=>m.segs.forEach(s=>{legendSet[s.label]=s.color;}));
+
+  wrap.innerHTML = `
+    <div class="tl-legend">
+      ${Object.entries(legendSet).map(([l,c])=>`<div class="tl-leg-item"><div class="tl-dot" style="background:${c};"></div><span>${l}</span></div>`).join('')}
+    </div>
+    ${modelos.map(m=>`
+      <div class="tl-row">
+        <div class="tl-label">${m.nome}</div>
+        <div class="tl-track">
+          ${m.segs.map(s=>`<div class="tl-seg" style="width:${s.pct}%;background:${s.color};" title="${s.label}: ${s.pct}%">${s.pct>8?s.label:''}</div>`).join('')}
+        </div>
+        <div style="width:60px;text-align:right;font-size:11px;font-weight:700;color:${m.color};padding-left:8px;">${m===modelos[0]?'~6.5h':'~3.2h'}</div>
+      </div>
+    `).join('')}
+    <p style="font-size:11px;color:var(--text-tertiary);margin-top:.5rem;">* Estimativa baseada em km e velocidade média de trânsito. Larguras proporcionais ao tempo de cada etapa.</p>
+  `;
+}
+
+
+function renderEstoque(){
+  const totalPedidos = VEL_LOJAS.reduce((a,l)=>a+l.pedidos,0);
+  const pedDia = Math.round(totalPedidos / 150); // ~5 meses
+  const pedSem = pedDia * 7;
+  const freqMedia = 5;
+  const cobDias = 3;
+  const volumeBarueri = pedDia * cobDias;
+  const saidas15 = 15;
+  const saidasNovo = Math.round(saidas15 * 0.55); // ~45% menos saídas
+
+  document.getElementById('saidas-bar-val').innerText = '~'+saidasNovo+'x';
+  document.getElementById('cob-dias-val').innerText = '~'+cobDias+' dias de cobertura';
+
+  document.getElementById('estoque-grid').innerHTML = `
+    <div class="est-item"><div class="est-value">${pedDia.toLocaleString('pt-BR')}</div><div class="est-label">pedidos/dia (média)</div></div>
+    <div class="est-item"><div class="est-value">${volumeBarueri.toLocaleString('pt-BR')}</div><div class="est-label">itens necessários no Hub (3 dias)</div></div>
+    <div class="est-item"><div class="est-value">${saidasNovo}x</div><div class="est-label">saídas Itapeva/semana (novo)</div></div>
+    <div class="est-item"><div class="est-value" style="color:#15803D;">-${saidas15-saidasNovo}x</div><div class="est-label">expedições reduzidas/semana</div></div>
+    <div class="est-item"><div class="est-value" style="color:#15803D;">${Math.round((saidas15-saidasNovo)/saidas15*100)}%</div><div class="est-label">redução no acionamento de Itapeva</div></div>
+    <div class="est-item"><div class="est-value" style="color:#4338CA;">${cobDias}d</div><div class="est-label">cobertura estimada no Hub</div></div>
+  `;
+
+  document.getElementById('tbody-impacto').innerHTML = [
+    ['Saídas de Itapeva/semana', '15 viagens', saidasNovo+' viagens', '-'+(15-saidasNovo)+' viagens ('+Math.round((15-saidasNovo)/15*100)+'%)'],
+    ['Tipo de carga saindo de Itapeva', 'Fracionada / sob demanda', 'Consolidada / programada', 'Maior volume por viagem'],
+    ['Lead time loja (após corte)', '~6.5h médio', '~3.2h médio', '-3.3h (-51%)'],
+    ['Frequência de entrega nas lojas', '3x/semana', '5x/semana', '+2x/semana (+67%)'],
+    ['Cobertura de estoque no Hub', 'Zero (cross-dock)', '~3 dias', 'Lojas independentes de Itapeva'],
+    ['Risco de ruptura por trânsito', 'Alto (atraso em MG impacta loja)', 'Baixo (Hub absorve variação)', 'Resiliência operacional'],
+  ].map(([ind,atual,novo,ganho])=>`<tr>
+    <td style="font-weight:500;">${ind}</td>
+    <td style="text-align:center;color:#B91C1C;font-weight:600;">${atual}</td>
+    <td style="text-align:center;color:#15803D;font-weight:600;">${novo}</td>
+    <td style="text-align:center;color:#4338CA;font-weight:700;">${ganho}</td>
+  </tr>`).join('');
+}
+
+let velInit = false;
+const origSwitchTab = switchTab;
+switchTab = function(tab){
+  origSwitchTab(tab);
+  if(tab==='velocidade' && !velInit){
+    velInit=true;
+    renderVelKPIs();
+    renderVelTable();
+    renderVelCharts();
+    renderTimeline();
+    renderEstoque();
+  }
+};
+
+
+
+/* ===== MAPA DE CALOR LAPA ===== */
+const BAIRRO_COORDS = {
+  "VILA MARIANA":      [-23.5880,-46.6340,721],
+  "BELA VISTA":        [-23.5610,-46.6430,700],
+  "LIBERDADE":         [-23.5590,-46.6350,628],
+  "MOOCA":             [-23.5470,-46.5990,585],
+  "TATUAPÉ":           [-23.5427,-46.5740,1122],
+  "SANTANA":           [-23.5000,-46.6270,522],
+  "PERDIZES":          [-23.5380,-46.6640,515],
+  "JARDIM PAULISTA":   [-23.5710,-46.6580,507],
+  "CAMBUCI":           [-23.5660,-46.6220,452],
+  "PINHEIROS":         [-23.5620,-46.6850,510],
+  "CERQUEIRA CÉSAR":   [-23.5560,-46.6660,678],
+  "BARRA FUNDA":       [-23.5270,-46.6630,396],
+  "VILA DA SAÚDE":     [-23.6100,-46.6370,674],
+  "CONSOLAÇÃO":        [-23.5530,-46.6560,674],
+  "IPIRANGA":          [-23.5890,-46.6100,387],
+  "SANTO AMARO":       [-23.6540,-46.7060,479],
+  "ACLIMAÇÃO":         [-23.5720,-46.6350,588],
+  "POMPEIA":           [-23.5310,-46.6770,399],
+  "VILA PRUDENTE":     [-23.5780,-46.5890,448],
+  "SANTA CECILIA":     [-23.5440,-46.6530,635],
+  "BRÁS":              [-23.5380,-46.6170,635],
+  "VILA ANDRADE":      [-23.6380,-46.7360,410],
+  "BELENZINHO":        [-23.5320,-46.5970,315],
+  "INDIANÓPOLIS":      [-23.6000,-46.6520,523],
+  "MOEMA":             [-23.5980,-46.6620,297],
+  "ITAIM BIBI":        [-23.5860,-46.6780,376],
+  "BROOKLIN":          [-23.6230,-46.6960,432],
+  "ÁGUA BRANCA":       [-23.5240,-46.6800,426],
+  "ITAQUERA":          [-23.5430,-46.4560,248],
+  "PARAÍSO":           [-23.5760,-46.6450,411],
+  "CAMPO BELO":        [-23.6210,-46.6850,238],
+  "HIGIENÓPOLIS":      [-23.5396,-46.6523,349],
+  "VILA CARRÃO":       [-23.5430,-46.5500,378],
+  "CASA VERDE":        [-23.4940,-46.6520,201],
+  "PENHA DE FRANÇA":   [-23.5210,-46.5340,303],
+  "LAPA":              [-23.5240,-46.7050,196],
+  "LIMÃO":             [-23.4980,-46.6620,258],
+  "REPÚBLICA":         [-23.5430,-46.6390,293],
+  "SAÚDE":             [-23.6060,-46.6300,310],
+  "MORUMBI":           [-23.6140,-46.7230,175],
+  "CIDADE MONÇÕES":    [-23.6100,-46.6960,293],
+  "ALTO DA MOOCA":     [-23.5500,-46.5950,175],
+  "TUCURUVI":          [-23.4730,-46.6240,168],
+  "SUMAREZINHO":       [-23.5400,-46.6780,163],
+  "JARDINS":           [-23.5710,-46.6580,289],
+  "BUTANTÃ":           [-23.5678,-46.7280,222],
+  "JABAQUARA":         [-23.6390,-46.6420,309],
+  "VILA FORMOSA":      [-23.5480,-46.5440,154],
+  "SUMARÉ":            [-23.5380,-46.6720,274],
+  "VILA MADALENA":     [-23.5569,-46.6897,218],
+  "JARDIM AMERICA":    [-23.5760,-46.6680,238],
+  "VILA GUILHERME":    [-23.5070,-46.6050,211],
+  "CAMPOS ELÍSEOS":    [-23.5320,-46.6420,207],
+  "VILA LEOPOLDINA":   [-23.5220,-46.7200,220],
+  "ALTO DE PINHEIROS": [-23.5390,-46.7210,109],
+  "PACAEMBU":          [-23.5440,-46.6730,94],
+  "POMPÉIA":           [-23.5310,-46.6770,43],
+  "VILA MAZZEI":       [-23.4830,-46.6290,102],
+  "CASA VERDE ALTA":   [-23.4840,-46.6490,43],
+  "PARQUE MANDAQUI":   [-23.4760,-46.6280,148],
+  "IMIRIM":            [-23.4710,-46.6380,153],
+  "LAUZANE PAULISTA":  [-23.4720,-46.6290,142],
+  "FREGUESIA DO Ó":    [-23.4930,-46.6760,222],
+  "VILA MARIA":        [-23.5040,-46.6080,292],
+  "JARDIM SÃO PAULO":  [-23.4920,-46.5860,272],
+  "PARQUE NOVO MUNDO": [-23.5020,-46.5980,134],
+  "VILA GUSTAVO":      [-23.4810,-46.6150,131],
+  "PARADA INGLESA":    [-23.4760,-46.6210,126],
+  "VILA DOM PEDRO I":  [-23.5490,-46.5820,130],
+  "SAPOPEMBA":         [-23.5990,-46.4980,121],
+  "SACOMÃ":            [-23.6150,-46.5730,121],
+  "ITAIM PAULISTA":    [-23.4990,-46.4520,29],
+  "CIDADE TIRADENTES": [-23.5900,-46.3970,34],
+  "JARDIM ÂNGELA":     [-23.6930,-46.7560,23],
+  "CAPÃO REDONDO":     [-23.6720,-46.7710,4],
+  "GRAJAÚ":            [-23.6980,-46.6880,5],
+  "PARELHEIROS":       [-23.8120,-46.7230,1],
+  "PARQUE BRISTOL":    [-23.6220,-46.5770,81],
+  "CURSINO":           [-23.6180,-46.6200,44],
+  "PLANALTO PAULISTA": [-23.6160,-46.6440,94],
+  "VILA MONUMENTO":    [-23.5820,-46.6220,194],
+  "CAMBUCI_2":         [-23.5700,-46.6170,200],
+  "CHÁCARA KLABIN":    [-23.5900,-46.6350,34],
+  "JARDIM DA SAÚDE":   [-23.6210,-46.6340,42],
+  "CHÁCARA INGLESA":   [-23.6180,-46.6250,134],
+  "BROOKLIN PAULISTA": [-23.6230,-46.6960,156],
+  "VILA CLEMENTINO":   [-23.5990,-46.6440,138],
+  "MIRANDÓPOLIS":      [-23.6070,-46.6430,65],
+  "CAMPO GRANDE":      [-23.6920,-46.6980,45],
+  "INTERLAGOS":        [-23.7020,-46.6960,22],
+  "SOCORRO":           [-23.6820,-46.6890,111],
+  "CIDADE ADEMAR":     [-23.6730,-46.6680,83],
+  "AMERICANÓPOLIS":    [-23.6640,-46.6560,51],
+  "JARDIM MARAJOARA":  [-23.6620,-46.7040,79],
+  "PARAISÓPOLIS":      [-23.6280,-46.7320,49],
+  "REAL PARQUE":       [-23.6190,-46.7200,62],
+  "CIDADE JARDIM":     [-23.5920,-46.7020,10],
+  "JARDIM EUROPA":     [-23.5750,-46.6900,45],
+  "PINHEIROS_2":       [-23.5620,-46.7020,90],
+  "ALTO DA LAPA":      [-23.5280,-46.7260,81],
+  "LAPA DE BAIXO":     [-23.5320,-46.7150,30],
+  "VILA ANASTÁCIO":    [-23.5300,-46.7260,150],
+  "JAGUARÉ":           [-23.5420,-46.7470,100],
+  "VILA JAGUARA":      [-23.5190,-46.7450,47],
+  "VILA PIRITUBA":     [-23.4790,-46.7350,94],
+  "PIRITUBA":          [-23.4710,-46.7380,56],
+  "JARAGUÁ":           [-23.4530,-46.7620,32],
+  "PERUS":             [-23.3980,-46.7580,5],
+  "BRASILÂNDIA":       [-23.4640,-46.6940,92],
+  "CACHOEIRINHA":      [-23.4670,-46.6540,92],
+  "MANDAQUI":          [-23.4760,-46.6330,78],
+  "TREMEMBÉ":          [-23.4470,-46.6220,65],
+  "JAÇANÃ":            [-23.4670,-46.5940,11],
+  "VILA MEDEIROS":     [-23.4980,-46.5980,134],
+  "CANGAÍBA":          [-23.5030,-46.5320,44],
+  "GUAIANASES":        [-23.5550,-46.3780,50],
+  "LAJEADO":           [-23.5560,-46.4310,36],
+  "JARDIM HELENA":     [-23.5260,-46.4380,67],
+  "ITAQUERA_2":        [-23.5390,-46.4560,114],
+  "CIDADE LÍDER":      [-23.5480,-46.4500,114],
+  "PARQUE SÃO JORGE":  [-23.5560,-46.5050,114],
+};
+
+const HUB_LAPA_C = { lat: -23.5240, lng: -46.6800 };
+let leafCalor=null, heatLayer=null, circulos={};
+
+function initMapaCalor(){
+  if(leafCalor) return;
+
+  leafCalor = L.map('map-calor', {zoomControl:true, attributionControl:false})
+    .setView([HUB_LAPA_C.lat, HUB_LAPA_C.lng], 12);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO', maxZoom:19
+  }).addTo(leafCalor);
+
+  // Hub marker
+  const hubIcon = L.divIcon({
+    html:`<div style="width:18px;height:18px;background:#EF4444;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #EF4444,0 2px 8px rgba(0,0,0,.4);"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9], className:''
+  });
+  L.marker([HUB_LAPA_C.lat, HUB_LAPA_C.lng], {icon:hubIcon, zIndexOffset:2000})
+    .addTo(leafCalor)
+    .bindTooltip('<b>Hub Lapa — GoodStorage Park Lapa IV</b><br>Rua Mateo Forte, 216 — Água Branca', {permanent:false, direction:'right'});
+
+  // Raios
+  circulos.r5  = L.circle([HUB_LAPA_C.lat,HUB_LAPA_C.lng],{radius:5000,  color:'#22C55E',weight:1.5,opacity:.9,fillOpacity:.04,dashArray:'5,4'}).addTo(leafCalor).bindTooltip('5 km',{permanent:true,direction:'right',className:'',offset:[5000*Math.cos(0.78),0]});
+  circulos.r10 = L.circle([HUB_LAPA_C.lat,HUB_LAPA_C.lng],{radius:10000, color:'#F59E0B',weight:1.5,opacity:.9,fillOpacity:.04,dashArray:'5,4'}).addTo(leafCalor).bindTooltip('10 km',{permanent:true,direction:'right'});
+  circulos.r20 = L.circle([HUB_LAPA_C.lat,HUB_LAPA_C.lng],{radius:20000, color:'#EF4444',weight:1.5,opacity:.9,fillOpacity:.04,dashArray:'5,4'}).addTo(leafCalor).bindTooltip('20 km',{permanent:true,direction:'right'});
+
+  // Heatmap layer
+  const maxPed = Math.max(...Object.values(BAIRRO_COORDS).map(v=>v[2]));
+  const heatData = Object.values(BAIRRO_COORDS).map(([lat,lng,ped])=>[lat,lng,ped/maxPed]);
+  heatLayer = L.heatLayer(heatData,{
+    radius:35, blur:25, maxZoom:14,
+    gradient:{0.1:'#3399FF',0.3:'#00CCFF',0.5:'#00FF88',0.7:'#FFFF00',0.85:'#FF8800',1.0:'#FF0000'}
+  }).addTo(leafCalor);
+
+  // Circles layer para identificar bairros
+  window._bairroLayers = [];
+  atualizarMarcadores('total');
+
+  // Controles
+  ['r5','r10','r20'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', e=>{
+      if(e.target.checked) circulos[id].addTo(leafCalor);
+      else leafCalor.removeLayer(circulos[id]);
+    });
+  });
+
+  setTimeout(()=>{ leafCalor.invalidateSize(); updateLapa(); }, 200);
+}
+
+function atualizarMarcadores(mesIdx){
+  if(!leafCalor) return;
+  // Remover marcadores antigos
+  (window._bairroLayers||[]).forEach(l=>leafCalor.removeLayer(l));
+  window._bairroLayers = [];
+
+  const totGeral = Object.values(BAIRRO_COORDS).reduce((a,[,,p])=>a+p,0);
+  const maxPed = Math.max(...Object.values(BAIRRO_COORDS).map(v=>v[2]));
+  const sorted = Object.entries(BAIRRO_COORDS).sort((a,b)=>b[1][2]-a[1][2]);
+
+  sorted.forEach(([nome,[lat,lng,ped]], rank) => {
+    const pct = ped/maxPed;
+    const r = Math.max(8, Math.min(32, 6 + Math.sqrt(pct)*30));
+    const color = pct>0.65?'#EF4444':pct>0.35?'#F59E0B':pct>0.12?'#4338CA':'#22C55E';
+    const opacity = 0.45 + pct*0.4;
+
+    const circle = L.circleMarker([lat,lng], {
+      radius: r,
+      color: '#fff',
+      weight: 1.5,
+      fillColor: color,
+      fillOpacity: opacity
+    }).addTo(leafCalor);
+
+    circle.bindTooltip(
+      `<div style="font-family:Inter,sans-serif;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${rank+1}. ${nome}</div>
+        <div style="font-size:12px;color:#555;">${ped.toLocaleString('pt-BR')} pedidos &nbsp;·&nbsp; ${(ped/totGeral*100).toFixed(1)}%</div>
+      </div>`,
+      {direction:'top', offset:[0,-(r+4)]}
+    );
+
+    window._bairroLayers.push(circle);
+  });
+}
+
+function flyToBairro(nome){
+  const entry = BAIRRO_COORDS[nome];
+  if(!entry || !leafCalor) return;
+  leafCalor.flyTo([entry[0], entry[1]], 14, {duration:.8});
+}
+
+
+/* ===== DISTRIBUIÇÃO POR RAIO ===== */
+const DIST_LAPA = {"VILA MARIANA": 8.5, "BELA VISTA": 5.6, "LIBERDADE": 6.0, "MOOCA": 8.6, "TATUAPÉ": 11.0, "SANTANA": 6.0, "PERDIZES": 2.3, "JARDIM PAULISTA": 5.7, "CAMBUCI": 7.5, "PINHEIROS": 4.3, "CERQUEIRA CÉSAR": 3.8, "BARRA FUNDA": 1.8, "VILA DA SAÚDE": 10.5, "CONSOLAÇÃO": 4.0, "IPIRANGA": 10.2, "SANTO AMARO": 14.7, "ACLIMAÇÃO": 7.0, "POMPEIA": 0.8, "VILA PRUDENTE": 11.0, "BRÁS": 6.6, "VILA ANDRADE": 13.9, "BELENZINHO": 8.5, "INDIANÓPOLIS": 8.9, "MOEMA": 8.4, "ITAIM BIBI": 6.9, "BROOKLIN": 11.1, "ÁGUA BRANCA": 0.0, "ITAQUERA": 22.9, "PARAÍSO": 6.8, "CAMPO BELO": 10.8, "HIGIENÓPOLIS": 3.3, "VILA CARRÃO": 13.4, "CASA VERDE": 4.4, "PENHA DE FRANÇA": 14.9, "LAPA": 2.5, "LIMÃO": 3.4, "REPÚBLICA": 4.7, "SAÚDE": 10.4, "MORUMBI": 10.9, "CIDADE MONÇÕES": 9.7, "ALTO DA MOOCA": 9.1, "TUCURUVI": 8.0, "SUMAREZINHO": 1.8, "JARDINS": 5.7, "BUTANTÃ": 6.9, "JABAQUARA": 13.4, "VILA FORMOSA": 14.1, "SUMARÉ": 1.8, "VILA MADALENA": 3.8, "JARDIM AMERICA": 5.9, "VILA GUILHERME": 7.9, "CAMPOS ELÍSEOS": 4.0, "VILA LEOPOLDINA": 4.1, "ALTO DE PINHEIROS": 4.5, "PACAEMBU": 2.3, "VILA MAZZEI": 6.9, "PARQUE MANDAQUI": 7.5, "IMIRIM": 7.3, "LAUZANE PAULISTA": 7.8, "FREGUESIA DO Ó": 3.5, "VILA MARIA": 7.7, "PARQUE NOVO MUNDO": 8.7, "VILA GUSTAVO": 8.2, "PARADA INGLESA": 8.0, "VILA DOM PEDRO I": 10.4, "SACOMÃ": 14.9, "ALTO DA LAPA": 4.7, "LAPA DE BAIXO": 3.7, "VILA ANASTÁCIO": 4.7, "JAGUARÉ": 7.1, "VILA PIRITUBA": 7.5, "PIRITUBA": 8.3, "BRASILÂNDIA": 6.8, "MANDAQUI": 7.2, "TREMEMBÉ": 10.4, "VILA MEDEIROS": 8.8, "CANGAÍBA": 15.3, "JARDIM ANDARAÍ": 5.1, "BOM RETIRO": 4.6, "SÉ": 5.6, "CENTRO": 5.6, "LUZ": 5.0, "PLANALTO PAULISTA": 10.9, "CURSINO": 12.1, "PARQUE BRISTOL": 15.1, "JARDIM MARAJOARA": 15.5, "REAL PARQUE": 11.3, "BROOKLIN PAULISTA": 11.1, "VILA CLEMENTINO": 9.1, "MIRANDÓPOLIS": 10.0, "CAMPO GRANDE": 18.8, "SOCORRO": 17.6, "CIDADE ADEMAR": 16.6, "AMERICANÓPOLIS": 15.8, "PARAISÓPOLIS": 12.7, "GUAIANAZES": 31.0, "CIDADE TIRADENTES": 29.8, "JARDIM ÂNGELA": 20.3, "SAPOPEMBA": 20.3, "CIDADE LÍDER": 23.6, "PARQUE SÃO JORGE": 18.2, "PENHA DE FRANCA": 14.9, "BELÉM": 11.2, "CATUMBI": 7.3, "CARANDIRU": 5.3, "PARI": 7.0, "VILA MARIA ALTA": 7.7, "JARDIM SÃO PAULO": 10.2};
+
+const RAIO_CONFIG = [
+  {label:'até 5 km',  max:5,   color:'#4338CA', bg:'#EEF0FF'},
+  {label:'5–10 km',   max:10,  color:'#0891B2', bg:'#E0F7FA'},
+  {label:'10–20 km',  max:20,  color:'#F59E0B', bg:'#FEF3C7'},
+  {label:'+ 20 km',   max:9999,color:'#EF4444', bg:'#FEE2E2'},
+];
+
+function renderRaioCards(mesIdx){
+  const totGeral = listaLapa.reduce((a,b)=>a+getVal(b,mesIdx),0)||1;
+
+  // Agrupar bairros por faixa
+  const faixas = RAIO_CONFIG.map(()=>{return {pedidos:0, bairros:0}});
+
+  listaLapa.forEach(item=>{
+    const val = getVal(item, mesIdx);
+    if(!val) return;
+    // Tentar encontrar distância — normalizar nome
+    const nomesParaTentar = [item.nome, item.nome.toUpperCase()];
+    let dist = null;
+    for(const n of nomesParaTentar){
+      if(DIST_LAPA[n] !== undefined){ dist = DIST_LAPA[n]; break; }
+    }
+    if(dist === null) dist = 25; // default +20km se não mapeado
+
+    const fi = dist<=5?0:dist<=10?1:dist<=20?2:3;
+    faixas[fi].pedidos += val;
+    faixas[fi].bairros += 1;
+  });
+
+  const cores = RAIO_CONFIG.map(r=>r.color);
+  const bgs   = RAIO_CONFIG.map(r=>r.bg);
+
+  // Cards
+  document.getElementById('raio-cards').innerHTML = faixas.map((f,i)=>{
+    const pct = (f.pedidos/totGeral*100).toFixed(1);
+    const cfg = RAIO_CONFIG[i];
+    return `<div style="background:${cfg.bg};border-radius:10px;padding:.9rem 1.1rem;border-left:4px solid ${cfg.color};">
+      <div style="font-size:10px;font-weight:700;color:${cfg.color};text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">${cfg.label}</div>
+      <div style="font-size:28px;font-weight:800;color:${cfg.color};line-height:1.1;letter-spacing:-.5px;">${pct}%</div>
+      <div style="font-size:11px;color:#555;margin-top:4px;">${f.pedidos.toLocaleString('pt-BR')} pedidos</div>
+      <div style="font-size:10px;color:#888;margin-top:2px;">${f.bairros} bairro${f.bairros!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+
+  // Barra empilhada
+  document.getElementById('raio-bar-total').innerHTML = faixas.map((f,i)=>{
+    const pct = (f.pedidos/totGeral*100).toFixed(1);
+    return `<div style="width:${pct}%;background:${RAIO_CONFIG[i].color};transition:width .4s;" title="${RAIO_CONFIG[i].label}: ${pct}%"></div>`;
+  }).join('');
+
+  // Legenda
+  document.getElementById('raio-legend').innerHTML = faixas.map((f,i)=>{
+    const pct = (f.pedidos/totGeral*100).toFixed(1);
+    return `<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);">
+      <div style="width:10px;height:10px;border-radius:2px;background:${RAIO_CONFIG[i].color};"></div>
+      <span style="font-weight:600;color:${RAIO_CONFIG[i].color};">${pct}%</span>
+      <span>${RAIO_CONFIG[i].label} · ${f.bairros} bairros</span>
+    </div>`;
+  }).join('');
+}
+
+/* ===== INIT ===== */
+updateLapa();
+renderLineLapa();
+renderDonutLapa();
+setTimeout(initMapaCalor, 300);
+renderRows('lapa');
+renderRows('bar');
+updateResumo();
+renderChart();
+renderKPIsBar();
+renderTabelaBar();
+renderChartsBar();
+</script>
+</body>
+</html>
