@@ -1,0 +1,497 @@
+/* =========================================================
+   Caramelo Design System — Colors & Type
+   Petlove's Caramelo2 tokens (light theme) + legacy Caramelo.
+   Source of truth: hummingbird-develop/caramelo2/lib/src/tokens/
+   ========================================================= */
+
+/* ---- Fonts ---- */
+@font-face {
+  font-family: "Gooper";
+  src: url("fonts/Gooper-Semi-Bold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Gooper";
+  src: url("fonts/Gooper-Semi-Bold-Italic.otf") format("opentype");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Gooper";
+  src: url("fonts/Gooper-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Gooper";
+  src: url("fonts/Gooper-Black-Italic.otf") format("opentype");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("fonts/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("fonts/Roboto-Medium.ttf") format("truetype");
+  font-weight: 500;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("fonts/Roboto-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+:root {
+  /* ================== PRIMITIVES — GELO (warm cream, “neutro” per brandbook) ==================
+     Petlove's proprietary neutral. Gelo is the page — not a cool grey, not a brown. */
+  --gelo-0:    #FFFFFF;
+  --gelo-light:  #FBF9F7;  /* lightest tint */
+  --gelo-medium: #F5F1EC;  /* surface between page and cards */
+  --gelo-main:   #F3EEE8;  /* PAGE BACKGROUND — the one that defines the brand */
+  --gelo-dark:   #D9D3CC;  /* divider / quiet border */
+  /* Legacy grey-* aliases map to Gelo so existing UI code keeps working. */
+  --grey-0:    var(--gelo-0);
+  --grey-100:  var(--gelo-light);
+  --grey-150:  var(--gelo-medium);
+  --grey-200:  var(--gelo-main);
+  --grey-300:  var(--gelo-dark);
+
+  /* ================== PRIMITIVES — INK (functional text black) ==================
+     Brandbook: “O uso da cor preta está restrito a um uso funcional nos textos do app e do site.”
+     These are cool, neutral greys — not brown — so body copy reads as near-black. */
+  --ink-400:  #8C8A88;  /* tertiary / disabled text */
+  --ink-500:  #6E6C6B;  /* meta, captions */
+  --ink-700:  #3A3837;  /* secondary body text */
+  --ink-900:  #1A1918;  /* primary body text — functional black */
+  --ink-1000: #000000;  /* illustration outlines only */
+  /* Legacy grey-* aliases map to Ink so existing UI code keeps working. */
+  --grey-400:  var(--ink-400);
+  --grey-500:  var(--ink-500);
+  --grey-600:  #575553;
+  --grey-700:  var(--ink-700);
+  --grey-800:  #262524;
+  --grey-900:  var(--ink-900);  /* primary text */
+  --grey-1000: var(--ink-1000);
+  --grey-1100: #000000;
+
+  /* ================== PRIMITIVES — ROXO (the one proprietary brand color) ==================
+     Brandbook v1.0 — “assume um único roxo como cor proprietária”.
+     Official 5-stop ramp: darkest / dark / main / medium / light. Extended at both ends. */
+  --purple-100:  #F1EBFA;  /* extended — brand wash, chip bg */
+  --purple-200:  #E2D3F1;  /* extended */
+  --purple-300:  #9672C7;  /* brand LIGHT */
+  --purple-400:  #7B4EB9;  /* brand MEDIUM */
+  --purple-500:  #623AA7;  /* extended */
+  --purple-600:  #4E2096;  /* brand MAIN — the Petlove roxo */
+  --purple-700:  #51248F;  /* brand DARK (close to main, for hover/pressed nuance) */
+  --purple-800:  #411D72;  /* brand DARKEST */
+  --purple-900:  #2F1554;
+  --purple-1000: #1C0C33;
+
+  /* ================== PRIMITIVES — VERDE (success / “grátis”) ==================
+     Brandbook official: dark #3D8D5E / main #49A971 / medium #67B789 / light #86C6A0 */
+  --green-100:  #EAF5EE;
+  --green-200:  #CFE9D8;
+  --green-300:  #86C6A0;  /* brand LIGHT */
+  --green-400:  #67B789;  /* brand MEDIUM */
+  --green-500:  #58B17D;
+  --green-600:  #49A971;  /* brand MAIN */
+  --green-700:  #3D8D5E;  /* brand DARK — text on light */
+  --green-800:  #2F6F4A;
+  --green-900:  #204F35;
+  --green-1000: #143322;
+
+  /* ================== PRIMITIVES — VERMELHO (heart, errors, “indispensável”) ==================
+     Brandbook official: dark #C12E23 / main #EA534A / medium #EB584E / light #EF7A71
+     Also the color of the heart accent on the logo. */
+  --red-100:  #FDECEB;
+  --red-200:  #F9D0CD;
+  --red-300:  #EF7A71;  /* brand LIGHT */
+  --red-400:  #EB584E;  /* brand MEDIUM */
+  --red-500:  #EA534A;  /* (alias of main for backwards-compat) */
+  --red-600:  #EA534A;  /* brand MAIN — the ❤️ red */
+  --red-700:  #C12E23;  /* brand DARK — errors */
+  --red-800:  #8E2019;
+  --red-900:  #5E1510;
+  --red-1000: #3D0D0A;
+
+  /* ================== PRIMITIVES — AMARELO (warnings, focus ring, “leveza”) ==================
+     Brandbook official: dark #D58935 / main #FFA840 / medium #FFB360 / light #FFC280 */
+  --yellow-100:  #FFF6E9;
+  --yellow-200:  #FFE9CB;
+  --yellow-300:  #FFC280;  /* brand LIGHT */
+  --yellow-400:  #FFB360;  /* brand MEDIUM */
+  --yellow-500:  #FFA840;  /* (alias of main) */
+  --yellow-600:  #FFA840;  /* brand MAIN */
+  --yellow-700:  #D58935;  /* brand DARK — text on light */
+  --yellow-800:  #A76B27;
+  --yellow-900:  #7A4D1B;
+  --yellow-1000: #4D3013;
+
+  /* ================== PRIMITIVES — BLUE (info) ================== */
+  --blue-100:  #F3F7FD;
+  --blue-200:  #DBE7F9;
+  --blue-300:  #B5CFF3;
+  --blue-400:  #84AFEB;
+  --blue-500:  #5490E4;
+  --blue-600:  #0A60D8;
+  --blue-700:  #0848A2;
+  --blue-800:  #063A82;
+  --blue-900:  #052B61;
+  --blue-1000: #031D41;
+
+  /* ================== SEMANTIC — BACKGROUND ================== */
+  --bg-surface-primary:    var(--gelo-0);      /* #FFFFFF — cards, sheets */
+  --bg-surface-secondary:  var(--gelo-main);   /* #F3EEE8 — PAGE BG (brand Gelo) */
+  --bg-surface-tertiary:   var(--gelo-medium); /* #F5F1EC */
+  --bg-surface-quiet:      var(--gelo-light);  /* #FBF9F7 — barely-there tint */
+  --bg-surface-always-light: #FFFFFF;
+
+  --bg-brand-weak:      var(--purple-100);
+  --bg-brand-primary:   var(--purple-600);
+  --bg-brand-strong:    var(--purple-700);
+  --bg-brand-strongest: var(--purple-800);
+
+  --bg-status-danger-strong:  var(--red-700);
+  --bg-status-danger-weak:    var(--red-200);
+  --bg-status-warning-strong: var(--yellow-600);
+  --bg-status-warning-weak:   var(--yellow-200);
+  --bg-status-success-strong: var(--green-700);
+  --bg-status-success-weak:   var(--green-200);
+  --bg-status-info-strong:    var(--blue-600);
+  --bg-status-info-weak:      var(--blue-100);
+
+  --bg-disabled:          var(--grey-100);
+  --bg-disabled-inverted: rgba(255, 255, 255, 0.12);
+
+  /* ================== SEMANTIC — FOREGROUND (text + shape) ================== */
+  --fg-text-primary:   var(--grey-900);
+  --fg-text-secondary: var(--grey-700);
+  --fg-text-tertiary:  var(--grey-500);
+  /* Headings lean on brand purple — hero + titles. */
+  --fg-text-heading:   var(--purple-600);
+  --fg-text-brand:         var(--purple-600);
+  --fg-text-brand-weak:    var(--purple-100);
+  --fg-text-brand-strong:  var(--purple-800);
+  --fg-text-inverted:  var(--grey-0);
+  --fg-text-always-light: #FFFFFF;
+  --fg-text-always-dark:  #000000;
+
+  --fg-status-danger:   var(--red-800);
+  --fg-status-info:     var(--blue-800);
+  --fg-status-warning:  var(--yellow-900);
+  --fg-status-success:  var(--green-800);
+
+  --fg-disabled: var(--grey-300);
+  --fg-pressed:  var(--purple-800);
+  --fg-hover:    var(--purple-500);
+
+  /* ================== SEMANTIC — BORDERS ================== */
+  --border-primary:       var(--grey-300);
+  --border-secondary:     var(--grey-200);
+  --border-subtle:        var(--grey-0);
+  --border-brand:         var(--purple-600);
+  --border-brand-weakest: var(--purple-100);
+  --border-brand-weak:    var(--purple-200);
+  --border-brand-strong:  var(--purple-700);
+  --border-inverted:      var(--grey-0);
+  --border-focus:         var(--yellow-600);
+  --border-disabled:      var(--grey-300);
+
+  --border-status-danger:  var(--red-600);
+  --border-status-info:    var(--blue-600);
+  --border-status-warning: var(--yellow-600);
+  --border-status-success: var(--green-600);
+
+  /* ================== STATE LAYERS (overlays) ================== */
+  --state-selected:       rgba(78, 32, 150, 0.16);
+  --state-focus:          rgba(0, 0, 0, 0.04);
+  --state-hover-weak:     rgba(0, 0, 0, 0.08);
+  --state-hover-strong:   rgba(0, 0, 0, 0.20);
+  --state-pressed-weak:   rgba(0, 0, 0, 0.16);
+  --state-pressed-strong: rgba(0, 0, 0, 0.32);
+
+  /* ================== SCRIMS / GRADIENTS ================== */
+  --scrim-modal:   rgba(15, 13, 11, 0.5);
+  --scrim-button:  linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.196) 100%);
+  --header-gradient: linear-gradient(to top, #FFFFFF 0%, #F3EEE8 100%);
+
+  /* ================== SHADOWS (soft, cool-ink based — Gelo page needs subtle lift) ==================
+     Shadow color = #1A1918 (functional black) at low alphas. */
+  --shadow-300:  0 1px 2px   rgba(26, 25, 24, 0.04);
+  --shadow-400:  0 2px 4px   rgba(26, 25, 24, 0.05);
+  --shadow-500:  0 2px 6px   rgba(26, 25, 24, 0.06);
+  --shadow-600:  0 4px 10px  rgba(26, 25, 24, 0.07);
+  --shadow-700:  0 6px 14px  rgba(26, 25, 24, 0.08);
+  --shadow-800:  0 8px 20px  rgba(26, 25, 24, 0.09);
+  --shadow-900:  0 12px 28px rgba(26, 25, 24, 0.10);
+  --shadow-1000: 0 16px 40px rgba(26, 25, 24, 0.12);
+
+  /* ================== RADII (Caramelo2 BrandShapes) ================== */
+  --radius-xs:    4px;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-lg:    16px;
+  --radius-xl:    20px;
+  --radius-pill:  9999px;
+  --radius-text:  2px;
+
+  /* ================== SPACING ================== */
+  --space-xxs: 4px;
+  --space-xs:  8px;
+  --space-sm:  12px;
+  --space-md:  16px;
+  --space-lg:  20px;
+  --space-xl:  24px;
+  --space-xl2: 32px;
+  --space-xl3: 40px;
+  --space-xl4: 48px;
+  --space-xl5: 64px;
+  --space-xl6: 80px;
+  --space-xl7: 96px;
+
+  /* ================== TYPOGRAPHY — FAMILIES ==================
+     Brandbook v1.0: “utilizamos sempre a font Gooper Black, para títulos, e a font Roboto Regular,
+     para compor nossos layouts.” Gooper = brand/display, Roboto = primary body font.
+     Inter is kept as a digital-only alias for the Caramelo2 codebase. */
+  --font-brand: "Gooper", "Fraunces", Georgia, serif;          /* displays + titles */
+  --font-plain: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; /* body */
+  --font-ui:    "Inter", "Roboto", -apple-system, sans-serif;  /* Caramelo2 digital alias */
+  --font-legacy: "Roboto", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  /* ================== TYPOGRAPHY — WEIGHTS ================== */
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-bold:    700;
+  --fw-display: 700;
+
+  /* ================== TYPOGRAPHY — SIZES ================== */
+  --fs-100: 12px;
+  --fs-200: 14px;
+  --fs-300: 16px;
+  --fs-350: 22px;
+  --fs-400: 24px;
+  --fs-500: 32px;
+  --fs-600: 40px;
+  --fs-700: 48px;
+  --fs-800: 56px;
+
+  /* ================== TYPOGRAPHY — LINE HEIGHTS ================== */
+  --lh-display:  1.25;
+  --lh-title:    1.4;
+  --lh-section:  1.3;
+  --lh-subtitle: 1.25;
+  --lh-body:     1.4;
+  --lh-caption:  1.3;
+  --lh-label:    1;
+}
+
+/* =========================================================
+   SEMANTIC TYPE STYLES (Caramelo2 typeset)
+   Use these utility classes OR the mixin-like vars above.
+   ========================================================= */
+
+/* --- Display (Gooper, bold) --- */
+.type-display-primary,
+.type-display-1 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-brand);
+  font-weight: var(--fw-display);
+  font-size: 56px;
+  line-height: var(--lh-display);
+  letter-spacing: -0.01em;
+}
+.type-display-secondary,
+.type-display-2 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-brand);
+  font-weight: var(--fw-display);
+  font-size: 48px;
+  line-height: var(--lh-display);
+  letter-spacing: -0.01em;
+}
+.type-display-tertiary,
+.type-display-3 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-brand);
+  font-weight: var(--fw-display);
+  font-size: 24px;
+  line-height: var(--lh-display);
+}
+
+/* --- Title (Inter, bold) --- */
+.type-title-primary, h1 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 32px;
+  line-height: var(--lh-title);
+  margin: 0;
+}
+.type-title-secondary, h2 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 24px;
+  line-height: var(--lh-title);
+  margin: 0;
+}
+.type-title-tertiary, h3 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 16px;
+  line-height: var(--lh-title);
+  margin: 0;
+}
+.type-title-section, h4 {
+  color: var(--fg-text-heading);
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 22px;
+  line-height: var(--lh-section);
+  margin: 0;
+}
+
+/* --- Subtitle (Inter, regular) --- */
+.type-subtitle-large {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 24px;
+  line-height: var(--lh-subtitle);
+  color: var(--fg-text-secondary);
+}
+.type-subtitle-medium {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 16px;
+  line-height: var(--lh-subtitle);
+  color: var(--fg-text-secondary);
+}
+.type-subtitle-small {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 14px;
+  line-height: var(--lh-subtitle);
+  color: var(--fg-text-secondary);
+}
+
+/* --- Body / Caption --- */
+.type-body, p {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 14px;
+  line-height: var(--lh-body);
+  color: var(--fg-text-primary);
+  margin: 0;
+}
+.type-body-bold {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 14px;
+  line-height: var(--lh-body);
+  color: var(--fg-text-primary);
+}
+.type-caption {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 12px;
+  line-height: var(--lh-caption);
+  color: var(--fg-text-secondary);
+}
+.type-caption-bold {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 12px;
+  line-height: var(--lh-caption);
+  color: var(--fg-text-primary);
+}
+
+/* --- Action (buttons, labels, links) --- */
+.type-action-label {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-medium);
+  font-size: 14px;
+  line-height: var(--lh-label);
+}
+.type-action-label-small {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-medium);
+  font-size: 12px;
+  line-height: var(--lh-label);
+}
+.type-link {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-medium);
+  font-size: 14px;
+  line-height: var(--lh-link, 1.4);
+  text-decoration: underline;
+  color: var(--fg-text-brand);
+}
+
+/* --- Promo (price/line-through/signals) --- */
+.type-promo-linethrough {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 12px;
+  line-height: 1.3;
+  text-decoration: line-through;
+  color: var(--fg-text-tertiary);
+}
+.type-promo-signal-md {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-regular);
+  font-size: 14px;
+  line-height: 1.3;
+}
+.type-promo-signal-sm {
+  font-family: var(--font-plain);
+  font-weight: var(--fw-bold);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* =========================================================
+   UTILITY — base document styles used across cards/UI kits
+   ========================================================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-surface-secondary);
+  color: var(--fg-text-primary);
+  font-family: var(--font-plain);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+* { box-sizing: border-box; }
